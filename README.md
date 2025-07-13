@@ -152,3 +152,4 @@ We welcome contributions to Voix! Please follow these steps:
 ## License
 
 Voix is dual-licensed under the AGPLv3 and VCL 1.0 licenses. See the src/LICENSE file for more details.
+(IMPORTANT - The VCL 1.0 license is for commercial use, while the AGPLv3 license is for all other uses. Please use the appropriate license for your use case.)

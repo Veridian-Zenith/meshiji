@@ -1,6 +1,6 @@
 # Maintainer: Dae <daedaevibin@naver.com>
 pkgname=voix
-pkgver=0.0.9b
+pkgver=0.0.15b
 pkgrel=1
 pkgdesc="A privilege escalation tool that replaces sudo/doas/sudo-rs, using PAM for authentication"
 arch=('x86_64')

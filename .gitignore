@@ -25,7 +25,6 @@ tmp/
 # Executables
 voix
 voix-pam
-voix-gui
 
 # Configuration files that might contain sensitive information
 # config.local

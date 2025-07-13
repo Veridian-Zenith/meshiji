@@ -2,7 +2,7 @@
 
 ## Overview
 
-Voix is a modern privilege escalation tool designed to replace traditional tools like `sudo` and `doas`. It provides a secure way to execute commands with elevated privileges while maintaining a clean and user-friendly interface.
+Voix is a modern privilege escalation tool designed to replace traditional tools like `sudo` and `doas`. It provides a secure way to execute commands with elevated privileges while maintaining a clean and user-friendly interface. Voix uses PAM for authentication, creating and using /etc/pam.d/voix for PAM authentication, making it a robust alternative to existing privilege escalation tools.
 
 ## Features
 
@@ -14,33 +14,23 @@ Voix is a modern privilege escalation tool designed to replace traditional tools
    - Logging of authentication attempts
    - PAM integration for authentication
 
-2. **GUI Interface**:
-   - Support for GTK 4/5 and Qt 5/6 backends
-   - Black and gold Hyprland-style theme
-   - Cross-platform compatibility
-
-3. **PAM Helper**:
+2. **PAM Helper**:
    - Authentication backend
    - Integration with system authentication
 
-4. **Build System**:
+3. **Build System**:
    - CMake-based build configuration
    - Multi-shell compatible build script (fish, bash, zsh)
    - Dependency management
 
 ### Work in Progress
 
-1. **GUI Improvements**:
-   - Enhanced theme support
-   - Better error handling and user feedback
-   - Additional customization options
-
-2. **Security Enhancements**:
+1. **Security Enhancements**:
    - More granular permission controls
    - Enhanced logging capabilities
    - Additional authentication methods
 
-3. **Documentation**:
+2. **Documentation**:
    - Complete API documentation
    - Usage examples and tutorials
    - Configuration guide
@@ -89,10 +79,6 @@ chmod +x build.fish
 voix <command> [args...]
 ```
 
-### GUI Tool
-```bash
-voix-gui
-```
 
 ## Configuration
 
@@ -133,12 +119,6 @@ return {
 │   ├── config.cpp      # Configuration handling
 │   ├── main.cpp        # Main CLI implementation
 │   └── utils.cpp       # Utility functions
-├── themes/
-│   └── black_gold_hyprland/ # Default theme
-│       ├── gtk.css     # GTK theme
-│       └── qt.qss       # Qt theme
-└── gui/
-    └── main.cpp         # GUI implementation
 ```
 
 ## Missing Parts and Future Work

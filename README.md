@@ -2,7 +2,7 @@
 
 ## Overview
 
-Voix is a modern privilege escalation tool designed to replace traditional tools like `sudo` and `doas`. It provides a secure way to execute commands with elevated privileges while maintaining a clean and user-friendly interface. Voix uses PAM for authentication, creating and using /etc/pam.d/voix for PAM authentication, making it a robust alternative to existing privilege escalation tools.
+Voix is a modern privilege escalation tool designed to replace traditional tools like `sudo` and `doas`. It provides a secure way to execute commands with elevated privileges while maintaining a clean and user-friendly interface. Voix uses PAM for authentication, creating and using /etc/pam.d/voix for PAM authentication, making it a robust alternative to existing privilege escalation tools. (Upload to AUR planned)
 
 ## Features
 
@@ -41,17 +41,17 @@ Voix is a modern privilege escalation tool designed to replace traditional tools
 
 #### Arch Linux
 ```bash
-sudo pacman -S gtk4 qt5-base qt6-base cmake make gcc pkgconf
+sudo pacman -S cmake make gcc pkgconf
 ```
 
 #### Debian/Ubuntu
 ```bash
-sudo apt-get install libgtk-4-dev qtbase5-dev qt6-base-dev cmake make gcc pkg-config
+sudo apt-get install cmake make gcc pkg-config
 ```
 
 #### Fedora
 ```bash
-sudo dnf install gtk4-devel qt5-devel qt6-devel cmake make gcc pkgconf
+sudo dnf install cmake make gcc pkgconf
 ```
 
 ### Building
@@ -62,14 +62,11 @@ git clone https://github.com/yourusername/voix.git
 cd voix
 ```
 
-2. Make the build script executable:
+2. Build the project:
 ```bash
-chmod +x build.fish
-```
-
-3. Build the project:
-```bash
-./build.fish
+cd src
+cmake -B build
+cmake --build build
 ```
 
 ## Usage
@@ -82,7 +79,7 @@ voix <command> [args...]
 
 ## Configuration
 
-The main configuration file is located at `/etc/voix/config.lua`. You can also use a local configuration file at `lua/config.lua`.
+The main configuration file is located at `/etc/voix/config.lua`.
 
 Example configuration:
 ```lua
@@ -104,44 +101,41 @@ return {
 
 ```
 .
-├── build.fish          # Build script (fish, bash, zsh compatible)
-├── CMakeLists.txt      # CMake build configuration
-├── include/            # Header files
-│   ├── auth.hpp
-│   ├── config.hpp
-│   └── utils.hpp
-├── lua/
-│   └── config.lua      # Default configuration
-├── pam/
-│   └── voix-pam-helper.cpp # PAM helper implementation
+├── .gitignore
+├── PKGBUILD
+├── README.md
 ├── src/
-│   ├── auth.cpp        # Authentication implementation
-│   ├── config.cpp      # Configuration handling
-│   ├── main.cpp        # Main CLI implementation
-│   └── utils.cpp       # Utility functions
+│   ├── .gitignore
+│   ├── build.fish
+│   ├── CMakeLists.txt
+│   ├── config.cpp
+│   ├── LICENSE
+│   ├── LICENSE-AGPLv3
+│   ├── LICENSE-VCL1.0
+│   ├── main.cpp
+│   ├── utils.cpp
+│   ├── include/
+│   │   ├── config.hpp
+│   │   └── utils.hpp
+│   └── lua/
+│       └── config.lua
 ```
 
 ## Missing Parts and Future Work
 
-1. **Additional Theme Support**:
-   - More theme options
-   - Theme customization tools
-
-2. **Enhanced Security Features**:
+1. **Enhanced Security Features**:
    - Time-based access controls
    - Command-specific permissions
    - Audit logging
 
-3. **Additional Backend Support**:
-   - Wayland compatibility improvements
+2. **Additional Backend Support**:
    - Additional authentication methods
 
-4. **Documentation**:
-   - Complete API documentation
+3. **Documentation**:
    - More detailed usage examples
    - Troubleshooting guide
 
-5. **Testing**:
+4. **Testing**:
    - Comprehensive test suite
    - CI/CD pipeline integration
 
@@ -157,4 +151,4 @@ We welcome contributions to Voix! Please follow these steps:
 
 ## License
 
-Voix is licensed under the AGPLv3 license. See the LICENSE file for more details.
+Voix is dual-licensed under the AGPLv3 and VCL 1.0 licenses. See the src/LICENSE file for more details.

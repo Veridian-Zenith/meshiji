@@ -4,6 +4,7 @@
 
 Voix is a modern privilege escalation tool designed to replace traditional tools like `sudo` and `doas`. It provides a secure way to execute commands with elevated privileges while maintaining a clean and user-friendly interface. Voix uses PAM for authentication, creating and using /etc/pam.d/voix for PAM authentication, making it a robust alternative to existing privilege escalation tools. (Upload to AUR planned)
 
+**Note**: Command Aliases in your shell will not work with Voix, this is unknown, feel free to open an issue if you know how to fix this.
 ## Features
 
 ### Current Implementation

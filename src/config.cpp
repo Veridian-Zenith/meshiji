@@ -1,45 +1,62 @@
-#include "../include/config.hpp"
-#include <fstream>
-#include <string>
-#include <vector>
+#include "include/config.hpp"
+#include <iostream>
+#include <lua.hpp>
+
+// Helper function to read a string field from a Lua table
+void get_string_field(lua_State *L, const char *key, std::string &value) {
+    lua_getfield(L, -1, key);
+    if (lua_isstring(L, -1)) {
+        value = lua_tostring(L, -1);
+    }
+    lua_pop(L, 1);
+}
+
+// Helper function to read an integer field from a Lua table
+void get_int_field(lua_State *L, const char *key, int &value) {
+    lua_getfield(L, -1, key);
+    if (lua_isinteger(L, -1)) {
+        value = lua_tointeger(L, -1);
+    }
+    lua_pop(L, 1);
+}
+
+// Helper function to read a table of strings from a Lua table
+void get_string_table(lua_State *L, const char *key, std::vector<std::string> &vec) {
+    lua_getfield(L, -1, key);
+    if (lua_istable(L, -1)) {
+        lua_pushnil(L);
+        while (lua_next(L, -2) != 0) {
+            if (lua_isstring(L, -1)) {
+                vec.push_back(lua_tostring(L, -1));
+            }
+            lua_pop(L, 1);
+        }
+    }
+    lua_pop(L, 1);
+}
 
 void load_config(const std::string &path, Config &config) {
-  std::ifstream file(path);
-  std::string line;
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L);
 
-  while (std::getline(file, line)) {
-    if (line.find("users") != std::string::npos) {
-      while (std::getline(file, line) && line.find("}") == std::string::npos) {
-        if (line.find('"') != std::string::npos) {
-          size_t start = line.find('"') + 1;
-          size_t end = line.find('"', start);
-          if (end > start)
-            config.users.push_back(line.substr(start, end - start));
-        }
-      }
+    if (luaL_dofile(L, path.c_str()) != LUA_OK) {
+        std::cerr << "Error loading config file: " << lua_tostring(L, -1) << std::endl;
+        lua_close(L);
+        return;
     }
-    if (line.find("groups") != std::string::npos) {
-      while (std::getline(file, line) && line.find("}") == std::string::npos) {
-        if (line.find('"') != std::string::npos) {
-          size_t start = line.find('"') + 1;
-          size_t end = line.find('"', start);
-          if (end > start)
-            config.groups.push_back(line.substr(start, end - start));
-        }
-      }
+
+    if (!lua_istable(L, -1)) {
+        std::cerr << "Config file must return a table" << std::endl;
+        lua_close(L);
+        return;
     }
-    if (line.find("max_auth_attempts") != std::string::npos) {
-      size_t eq = line.find('=');
-      if (eq != std::string::npos)
-        config.max_auth_attempts = std::stoi(line.substr(eq + 1));
-    }
-    if (line.find("log_file") != std::string::npos) {
-      size_t quote = line.find('"');
-      if (quote != std::string::npos) {
-        size_t end = line.find('"', quote + 1);
-        if (end > quote)
-          config.log_file = line.substr(quote + 1, end - quote - 1);
-      }
-    }
-  }
+
+    // Get global settings
+    get_int_field(L, "max_auth_attempts", config.max_auth_attempts);
+
+    // Get users and groups
+    get_string_table(L, "users", config.users);
+    get_string_table(L, "groups", config.groups);
+
+    lua_close(L);
 }

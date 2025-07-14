@@ -6,20 +6,23 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Check for required dependencies
 find_package(PkgConfig REQUIRED)
+pkg_check_modules(LUA REQUIRED lua)
+add_compile_definitions(_GNU_SOURCE)
 
 # Main Voix executable
 add_executable(voix
     main.cpp
     config.cpp
     utils.cpp
+    auth.cpp
 )
 
 
 # Include directories
-target_include_directories(voix PRIVATE include)
+target_include_directories(voix PRIVATE include ${LUA_INCLUDE_DIRS})
 
 # Link libraries
-target_link_libraries(voix pam)
+target_link_libraries(voix pam ${LUA_LIBRARIES})
 
 # Install targets
 install(TARGETS voix

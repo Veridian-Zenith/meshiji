@@ -94,7 +94,10 @@ return {
   },
 
   -- Maximum number of authentication attempts
-  max_auth_attempts = 3
+  max_auth_attempts = 3,
+
+  -- (Optional) Path to the log file. If not set, no logs will be written.
+  log_file = "/var/log/voix.log"
 }
 ```
 

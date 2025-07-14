@@ -7,7 +7,6 @@
 #include <pwd.h>
 #include <security/pam_appl.h>
 #include <security/pam_misc.h>
-#include <syslog.h>
 #include <vector>
 
 // Data structure to pass user credentials to the PAM conversation function
@@ -53,26 +52,26 @@ bool authenticate_user(const std::string &username, const std::string &password,
 
     int ret = pam_start("voix", username.c_str(), &conv, &pamh);
     if (ret != PAM_SUCCESS) {
-        log_message(LOG_ERR, "PAM initialization failed: " + std::string(pam_strerror(pamh, ret)), config.log_file);
+        log_message(3, "PAM initialization failed: " + std::string(pam_strerror(pamh, ret)), config.log_file);
         if (pamh) pam_end(pamh, ret);
         return false;
     }
 
     ret = pam_authenticate(pamh, 0);
     if (ret != PAM_SUCCESS) {
-        log_message(LOG_WARNING, "PAM authentication failed for user " + username + ": " + std::string(pam_strerror(pamh, ret)), config.log_file);
+        log_message(4, "PAM authentication failed for user " + username + ": " + std::string(pam_strerror(pamh, ret)), config.log_file);
         pam_end(pamh, ret);
         return false;
     }
 
     ret = pam_acct_mgmt(pamh, 0);
     if (ret != PAM_SUCCESS) {
-        log_message(LOG_WARNING, "PAM account management failed for user " + username + ": " + std::string(pam_strerror(pamh, ret)), config.log_file);
+        log_message(4, "PAM account management failed for user " + username + ": " + std::string(pam_strerror(pamh, ret)), config.log_file);
         pam_end(pamh, ret);
         return false;
     }
 
-    log_message(LOG_INFO, "PAM authentication successful for user: " + username, config.log_file);
+    log_message(6, "PAM authentication successful for user: " + username, config.log_file);
     pam_end(pamh, ret);
     return true;
 }
@@ -116,7 +115,7 @@ bool check_permissions(const std::string &username, const Config &config) {
 
 bool authenticate_and_escalate(const std::string &username, const Config &config) {
     if (!check_permissions(username, config)) {
-        log_message(LOG_WARNING, "DENY user=" + username, config.log_file);
+        log_message(4, "DENY user=" + username, config.log_file);
         std::cout << username << " not allowed. Add to /etc/voix/config.lua if this was intentional." << std::endl;
         return false;
     }
@@ -125,7 +124,7 @@ bool authenticate_and_escalate(const std::string &username, const Config &config
         std::string password = get_password();
         if (authenticate_user(username, password, config)) {
             if (setuid(0) != 0) {
-                log_message(LOG_ERR, "SEUIDFAIL user=" + username, config.log_file);
+                log_message(3, "SEUIDFAIL user=" + username, config.log_file);
                 std::cerr << "Failed to escalate privileges." << std::endl;
                 return false;
             }
@@ -136,7 +135,7 @@ bool authenticate_and_escalate(const std::string &username, const Config &config
         }
     }
 
-    log_message(LOG_WARNING, "AUTHFAIL user=" + username + " reason=max_attempts", config.log_file);
+    log_message(4, "AUTHFAIL user=" + username + " reason=max_attempts", config.log_file);
     std::cerr << "Too many authentication failures." << std::endl;
     return false;
 }

@@ -2,7 +2,6 @@
 #include <iostream>
 #include <termios.h>
 #include <unistd.h>
-#include <syslog.h>
 #include <fstream>
 #include <lua.hpp>
 #include <ctime>
@@ -48,22 +47,27 @@ void display_help() {
     std::cout << "For more information, see the README.md file." << std::endl;
 }
 
+// Define syslog level constants locally to avoid including syslog.h
+#define LOG_ERR     3
+#define LOG_WARNING 4
+#define LOG_INFO    6
+
 void log_message(int level, const std::string &message, const std::string &log_file) {
     if (log_file.empty()) {
-        syslog(level, "%s", message.c_str());
-    } else {
-        std::ofstream out(log_file, std::ios_base::app);
-        if (out.is_open()) {
-            auto t = std::time(nullptr);
-            auto tm = *std::localtime(&t);
-            out << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << " ";
-            switch (level) {
-                case LOG_ERR:    out << "[ERROR] ";   break;
-                case LOG_WARNING:out << "[WARNING] "; break;
-                case LOG_INFO:   out << "[INFO] ";    break;
-                default:         out << "[LOG] ";     break;
-            }
-            out << message << std::endl;
+        return; // Do not log if no file is specified
+    }
+
+    std::ofstream out(log_file, std::ios_base::app);
+    if (out.is_open()) {
+        auto t = std::time(nullptr);
+        auto tm = *std::localtime(&t);
+        out << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << " ";
+        switch (level) {
+            case LOG_ERR:     out << "[ERROR] ";   break;
+            case LOG_WARNING: out << "[WARNING] "; break;
+            case LOG_INFO:    out << "[INFO] ";    break;
+            default:          out << "[LOG] ";     break;
         }
+        out << message << std::endl;
     }
 }

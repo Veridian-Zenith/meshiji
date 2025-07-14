@@ -1,1 +1,1 @@
-return "0.0.23b"
+return "0.0.24b"

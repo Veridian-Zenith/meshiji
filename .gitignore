@@ -1,11 +1,13 @@
 # Build artifacts
-build/
+/src/build/
+/build/
 *.o
 *.so
 *.a
 *.out
 *.bin
 voix
+voix-pam
 voix.md
 
 # IDE and editor files
@@ -26,4 +28,3 @@ tmp/
 
 # Configuration files that might contain sensitive information
 # config.local
-

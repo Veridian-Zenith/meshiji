@@ -56,14 +56,23 @@ static void create_default_config(const std::string &path) {
 int main(int argc, char *argv[]) {
   openlog("voix", LOG_PID | LOG_CONS, LOG_AUTH);
 
+  // Verify that the program is running with the correct permissions
+  if (geteuid() != 0) {
+    std::cerr << "Error: Voix is not running with root privileges." << std::endl;
+    std::cerr << "This program must be owned by the root user and have the setuid bit set." << std::endl;
+    std::cerr << "Please run the following commands:" << std::endl;
+    std::cerr << "  sudo chown root:root " << argv[0] << std::endl;
+    std::cerr << "  sudo chmod u+s " << argv[0] << std::endl;
+    closelog();
+    return 1;
+  }
+
   // Config path logic
   std::string config_path = "/etc/voix/config.lua";
   struct stat buffer;
-  if (stat(config_path.c_str(), &buffer) != 0)
+  if (stat(config_path.c_str(), &buffer) != 0) {
     create_default_config(config_path);
-  std::ifstream test(config_path);
-  if (!test.good())
-    config_path = "lua/config.lua";
+  }
   Config cfg;
   load_config(config_path, cfg);
 
@@ -86,27 +95,36 @@ int main(int argc, char *argv[]) {
 
   // Missing command check
   if (argc < 2) {
-    syslog(LOG_ERR, "FAIL user=%s reason=missing_command", current_user.c_str());
-    std::cerr << "Usage: voix <command> [args...]" << std::endl;
+    display_help();
     closelog();
     return 2;
   }
 
-  // Check permissions and authenticate in one step
-  if (!check_permissions(current_user, cfg)) {
-    syslog(LOG_WARNING, "DENY user=%s cmd='%s'", current_user.c_str(), cmd_str.c_str());
-    std::cout << current_user << " not allowed. Add to /etc/voix/config.lua if this was intentional." << std::endl;
+  std::string command = argv[1];
+  if (command == "help" || command == "--help" || command == "-h") {
+    display_help();
+    closelog();
+    return 0;
+  }
+
+  if (command == "version" || command == "--version" || command == "-v") {
+    display_version();
+    closelog();
+    return 0;
+  }
+
+  // Authenticate and escalate privileges
+  if (!authenticate_and_escalate(current_user, cfg)) {
     closelog();
     return 1;
   }
 
-  // Execute command as current user
-  syslog(LOG_INFO, "SUCCESS user=%s cmd='%s'", current_user.c_str(), cmd_str.c_str());
+  // Execute command as root
+  log_message(LOG_INFO, "SUCCESS user=" + current_user + " cmd='" + cmd_str + "'", cfg.log_file);
   execl(user_shell.c_str(), user_shell.c_str(), "-c", cmd_str.c_str(), NULL);
 
   // If execl fails
-  syslog(LOG_ERR, "EXECFAIL user=%s cmd='%s' error=%s", current_user.c_str(),
-         cmd_str.c_str(), strerror(errno));
+  log_message(LOG_ERR, "EXECFAIL user=" + current_user + " cmd='" + cmd_str + "' error=" + strerror(errno), cfg.log_file);
   std::cerr << "Failed to execute command: " << strerror(errno) << std::endl;
   closelog();
   return 4;

@@ -53,6 +53,7 @@ void load_config(const std::string &path, Config &config) {
 
     // Get global settings
     get_int_field(L, "max_auth_attempts", config.max_auth_attempts);
+    get_string_field(L, "log_file", config.log_file);
 
     // Get users and groups
     get_string_table(L, "users", config.users);

@@ -6,7 +6,7 @@ return {
   -- List of users who can run commands with elevated privileges
   users = {
     "root",
-    "dae"
+    "your_username",  -- Replace with your actual username
   },
 
   -- List of groups whose members can run commands with elevated privileges

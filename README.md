@@ -46,12 +46,33 @@ cmake --build build
 
 3. Update permissions for the `voix` binary:
 ```bash
+sudo chown root:root ./build/voix
 sudo chmod u+s ./build/voix
 ```
 
 4. Install the binary:
 ```bash
 sudo install -o root -m 4755 build/voix /usr/local/bin/voix
+```
+
+**Note on running from the build directory:**
+
+For security reasons, the `setuid` feature only works on executables owned by `root`. If you want to run `voix` directly from the `build` directory for testing, you must ensure the binary is owned by `root` and has the `setuid` bit set, as shown in step 3. The `install` command in step 4 handles this for the final installed binary in `/usr/local/bin`.
+
+### PAM Configuration
+
+For Voix to authenticate users, you must create a PAM configuration file at `/etc/pam.d/voix`. This file tells the system how to handle authentication for the `voix` service.
+
+Create the file with the following content:
+```bash
+# /etc/pam.d/voix
+auth     required   pam_unix.so
+account  required   pam_unix.so
+```
+
+You can create this file using the following command:
+```bash
+sudo bash -c 'echo -e "auth     required   pam_unix.so\naccount  required   pam_unix.so" > /etc/pam.d/voix'
 ```
 
 ## Configuration
@@ -76,6 +97,14 @@ return {
   max_auth_attempts = 3
 }
 ```
+
+### Note for AUR Users
+
+If you have installed Voix from the AUR, you will need to edit the configuration file at `/etc/voix/config.lua` to grant permissions to your user. Since you cannot use `voix` to edit its own configuration, you will need to use an alternative method to gain root privileges, such as:
+
+*   Using `pkexec` to run your editor: `pkexec <your_editor> /etc/voix/config.lua`
+*   Using `su` to run your editor: `su -c "<your_editor> /etc/voix/config.lua"`
+*   Logging in as the `root` user in a TTY.
 
 ## Usage
 

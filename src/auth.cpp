@@ -1,6 +1,7 @@
 #include "include/auth.hpp"
 #include "include/utils.hpp"
 #include <algorithm>
+#include <iostream>
 #include <cstring>
 #include <grp.h>
 #include <pwd.h>
@@ -45,33 +46,33 @@ static int pam_conv_func(int num_msg, const struct pam_message **msg,
     return PAM_SUCCESS;
 }
 
-bool authenticate_user(const std::string &username, const std::string &password) {
+bool authenticate_user(const std::string &username, const std::string &password, const Config &config) {
     PamAuthData auth_data{&password};
     struct pam_conv conv = {pam_conv_func, &auth_data};
     pam_handle_t *pamh = nullptr;
 
     int ret = pam_start("voix", username.c_str(), &conv, &pamh);
     if (ret != PAM_SUCCESS) {
-        syslog(LOG_ERR, "PAM initialization failed: %s", pam_strerror(pamh, ret));
+        log_message(LOG_ERR, "PAM initialization failed: " + std::string(pam_strerror(pamh, ret)), config.log_file);
         if (pamh) pam_end(pamh, ret);
         return false;
     }
 
     ret = pam_authenticate(pamh, 0);
     if (ret != PAM_SUCCESS) {
-        syslog(LOG_WARNING, "PAM authentication failed for user %s: %s", username.c_str(), pam_strerror(pamh, ret));
+        log_message(LOG_WARNING, "PAM authentication failed for user " + username + ": " + std::string(pam_strerror(pamh, ret)), config.log_file);
         pam_end(pamh, ret);
         return false;
     }
 
     ret = pam_acct_mgmt(pamh, 0);
     if (ret != PAM_SUCCESS) {
-        syslog(LOG_WARNING, "PAM account management failed for user %s: %s", username.c_str(), pam_strerror(pamh, ret));
+        log_message(LOG_WARNING, "PAM account management failed for user " + username + ": " + std::string(pam_strerror(pamh, ret)), config.log_file);
         pam_end(pamh, ret);
         return false;
     }
 
-    syslog(LOG_INFO, "PAM authentication successful for user: %s", username.c_str());
+    log_message(LOG_INFO, "PAM authentication successful for user: " + username, config.log_file);
     pam_end(pamh, ret);
     return true;
 }
@@ -110,5 +111,32 @@ bool check_permissions(const std::string &username, const Config &config) {
         }
     }
 
+    return false;
+}
+
+bool authenticate_and_escalate(const std::string &username, const Config &config) {
+    if (!check_permissions(username, config)) {
+        log_message(LOG_WARNING, "DENY user=" + username, config.log_file);
+        std::cout << username << " not allowed. Add to /etc/voix/config.lua if this was intentional." << std::endl;
+        return false;
+    }
+
+    for (int i = 0; i < config.max_auth_attempts; ++i) {
+        std::string password = get_password();
+        if (authenticate_user(username, password, config)) {
+            if (setuid(0) != 0) {
+                log_message(LOG_ERR, "SEUIDFAIL user=" + username, config.log_file);
+                std::cerr << "Failed to escalate privileges." << std::endl;
+                return false;
+            }
+            return true;
+        }
+        if (i < config.max_auth_attempts - 1) {
+            std::cerr << "Authentication failed, please try again." << std::endl;
+        }
+    }
+
+    log_message(LOG_WARNING, "AUTHFAIL user=" + username + " reason=max_attempts", config.log_file);
+    std::cerr << "Too many authentication failures." << std::endl;
     return false;
 }

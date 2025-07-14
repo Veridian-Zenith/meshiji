@@ -37,17 +37,19 @@ sudo dnf install cmake make gcc pkgconf
 git clone https://github.com/Veridian-Zenith/Voix.git
 cd Voix/src
 ```
-2. Update permissions for the `voix` binary:
-```bash
-sudo chmod u+s ./build/voix
-```
-3. Build the project:
+
+2. Build the project:
 ```bash
 cmake -B build
 cmake --build build
 ```
 
-3. Install the binary:
+3. Update permissions for the `voix` binary:
+```bash
+sudo chmod u+s ./build/voix
+```
+
+4. Install the binary:
 ```bash
 sudo install -o root -m 4755 build/voix /usr/local/bin/voix
 ```

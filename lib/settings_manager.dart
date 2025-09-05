@@ -29,7 +29,8 @@ class SettingsManager {
       final content = await settingsFile.readAsString();
       final decoded = jsonDecode(content);
       if (decoded is Map<String, dynamic>) {
-        _settings = decoded;
+        // Merge with defaults to ensure all keys are present
+        _settings = _defaultSettings()..addAll(decoded);
       } else {
         debugPrint('Settings file malformed, resetting to defaults.');
         _settings = _defaultSettings();
@@ -49,12 +50,16 @@ class SettingsManager {
     bool? pluginsEnabled,
     bool? pluginProcessIsolation,
     int? concurrency,
+    bool? builtInTerminalEnabled,
+    bool? luaPluginSupportEnabled,
   }) async {
     if (autoCompute != null) _settings['autoCompute'] = autoCompute;
     if (lowSpec != null) _settings['lowSpec'] = lowSpec;
     if (pluginsEnabled != null) _settings['pluginsEnabled'] = pluginsEnabled;
     if (pluginProcessIsolation != null) _settings['pluginProcessIsolation'] = pluginProcessIsolation;
     if (concurrency != null) _settings['concurrency'] = concurrency;
+    if (builtInTerminalEnabled != null) _settings['builtInTerminalEnabled'] = builtInTerminalEnabled;
+    if (luaPluginSupportEnabled != null) _settings['luaPluginSupportEnabled'] = luaPluginSupportEnabled;
 
     await _saveSettingsToFile();
   }
@@ -66,7 +71,9 @@ class SettingsManager {
       'lowSpec': false,
       'pluginsEnabled': false,
       'pluginProcessIsolation': false,
-      'concurrency': 2,
+      'concurrency': 2, // Default to 2, as no specific value was provided.
+      'builtInTerminalEnabled': false,
+      'luaPluginSupportEnabled': false,
     };
   }
 

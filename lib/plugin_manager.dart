@@ -1,8 +1,8 @@
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 import 'package:path/path.dart' as p;
+import 'utils.dart';
 import 'package:flutter/foundation.dart'; // For debugPrint
-import 'utils.dart'; // For getUserHomeDirectory
 
 // A class to represent a single plugin.
 class Plugin {

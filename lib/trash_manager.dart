@@ -59,4 +59,68 @@ DeletionDate=${DateTime.now().toUtc().toIso8601String()}
       rethrow; // Re-throw to indicate failure
     }
   }
+
+  static Future<void> restoreFromTrash(String trashedPath) async {
+    await init();
+
+    final basename = p.basename(trashedPath);
+    final infoFilePath = p.join(_infoDirPath, '$basename.trashinfo');
+
+    if (!File(trashedPath).existsSync() || !File(infoFilePath).existsSync()) {
+      debugPrint('Trash item or info file not found for: $trashedPath');
+      return;
+    }
+
+    try {
+      final infoContent = await File(infoFilePath).readAsString();
+      final lines = infoContent.split('\n');
+      String? originalPath;
+      for (final line in lines) {
+        if (line.startsWith('Path=')) {
+          originalPath = line.substring('Path='.length);
+          break;
+        }
+      }
+
+      if (originalPath == null) {
+        debugPrint('Original path not found in info file for: $trashedPath');
+        return;
+      }
+
+      final originalFile = File(originalPath);
+      final originalDirectory = Directory(originalPath);
+
+      // Ensure the original directory exists before restoring
+      if (!originalFile.parent.existsSync() && !originalDirectory.parent.existsSync()) {
+        await originalFile.parent.create(recursive: true);
+      }
+
+      await File(trashedPath).rename(originalPath);
+      await File(infoFilePath).delete();
+      debugPrint('Restored "$trashedPath" to "$originalPath"');
+    } catch (e) {
+      debugPrint('Error restoring "$trashedPath" from trash: $e');
+      rethrow;
+    }
+  }
+
+  static Future<void> deletePermanently(String trashedPath) async {
+    await init();
+
+    final basename = p.basename(trashedPath);
+    final infoFilePath = p.join(_infoDirPath, '$basename.trashinfo');
+
+    try {
+      if (File(trashedPath).existsSync()) {
+        await File(trashedPath).delete(recursive: true);
+      }
+      if (File(infoFilePath).existsSync()) {
+        await File(infoFilePath).delete();
+      }
+      debugPrint('Permanently deleted "$trashedPath"');
+    } catch (e) {
+      debugPrint('Error permanently deleting "$trashedPath": $e');
+      rethrow;
+    }
+  }
 }

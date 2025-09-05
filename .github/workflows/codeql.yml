@@ -1,0 +1,74 @@
+name: "CodeQL - Flutter/Dart"
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  schedule:
+    - cron: '0 2 * * 1' # Runs weekly on Monday at 02:00 UTC
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      packages: read
+      actions: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ "javascript-typescript", "python" ] # Dart is not natively supported by CodeQL yet
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Setup Dart SDK
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v2
+        with:
+          sdk: stable
+
+      # Install Flutter dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Optional: build the app (for code scanning & dependency analysis)
+      - name: Build Flutter app
+        run: flutter build apk --release || flutter build linux --release
+
+      # Initialize CodeQL
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # Optionally add custom queries here
+          # queries: security-extended, security-and-quality
+
+      # Manual build step (if matrix.build-mode == manual)
+      - if: matrix.build-mode == 'manual'
+        shell: bash
+        run: |
+          echo "Manual build required. Replace this with your build commands."
+          exit 1
+
+      # Perform CodeQL analysis
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+      # Cache Dart/Flutter dependencies
+      - name: Cache Flutter/Dart packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-

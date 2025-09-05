@@ -29,7 +29,7 @@ jobs:
 
       # Setup Flutter SDK
       - name: Setup Flutter SDK
-        uses: flutter-actions/setup-flutter@v4
+        uses: flutter-actions/setup-flutter@v5
         with:
           version: stable
           channel: stable
@@ -40,7 +40,7 @@ jobs:
 
       # Optional: build the app (for code scanning & dependency analysis)
       - name: Build Flutter app
-        run: flutter build apk --release || flutter build linux --release
+        run: flutter build linux --release
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3

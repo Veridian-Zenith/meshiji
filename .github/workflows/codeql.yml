@@ -21,19 +21,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ "javascript-typescript", "python" ] # Dart is not natively supported by CodeQL yet
+        language: [ "javascript-typescript", "python" ] # Dart is not natively supported by CodeQL yet, so analyze Flutter/Dart dependencies via JS/TS & Python if relevant
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Dart SDK
-      - name: Setup Dart
-        uses: dart-lang/setup-dart@v2
+      # Setup Flutter SDK
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@v4
         with:
-          sdk: stable
+          version: stable
+          channel: stable
 
-      # Install Flutter dependencies
+      # Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
@@ -41,34 +42,32 @@ jobs:
       - name: Build Flutter app
         run: flutter build apk --release || flutter build linux --release
 
-      # Initialize CodeQL
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          # Optionally add custom queries here
+          # Use default queries or add custom query packs here
           # queries: security-extended, security-and-quality
 
-      # Manual build step (if matrix.build-mode == manual)
+      # Manual build step (only if using 'manual' mode)
       - if: matrix.build-mode == 'manual'
         shell: bash
         run: |
           echo "Manual build required. Replace this with your build commands."
           exit 1
 
-      # Perform CodeQL analysis
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
 
-      # Cache Dart/Flutter dependencies
-      - name: Cache Flutter/Dart packages
+      # Caching system
+      - name: Cache
         uses: actions/cache@v4
         with:
           path: |
             ~/.pub-cache
-            .dart_tool
+            ~/.flutter
           key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             ${{ runner.os }}-flutter-

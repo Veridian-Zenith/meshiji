@@ -12,22 +12,34 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(PkgConfig REQUIRED)
 
 # Find Lua
-find_path(LUA_INCLUDE_DIR lua.h
-    /usr/include
-    /usr/local/include
-)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LUA lua5.3)
 
-find_library(LUA_LIBRARY lua
-    /usr/lib
-    /usr/local/lib
-)
+if (LUA_FOUND)
+    set(LUA_INCLUDE_DIRS ${LUA_INCLUDE_DIRS})
+    set(LUA_LIBRARIES ${LUA_LIBRARIES})
+else()
+    # Fallback to manual search
+    find_path(LUA_INCLUDE_DIR lua.h
+        /usr/include/lua5.3
+        /usr/include
+        /usr/local/include/lua5.3
+        /usr/local/include
+    )
 
-if (LUA_INCLUDE_DIR AND LUA_LIBRARY)
-    set(LUA_FOUND TRUE)
-    set(LUA_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
-    set(LUA_LIBRARIES ${LUA_LIBRARY})
-else ()
-    message(FATAL_ERROR "Lua not found. Please specify LUA_INCLUDE_DIR and LUA_LIBRARY.")
+    find_library(LUA_LIBRARY lua5.3
+        /usr/lib/x86_64-linux-gnu
+        /usr/lib
+        /usr/local/lib
+    )
+
+    if (LUA_INCLUDE_DIR AND LUA_LIBRARY)
+        set(LUA_FOUND TRUE)
+        set(LUA_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
+        set(LUA_LIBRARIES ${LUA_LIBRARY})
+    else ()
+        message(FATAL_ERROR "Lua not found. Please install liblua5.3-dev or lua5.3 development package.")
+    endif()
 endif()
 
 # Optional Polkit support for GUI environments

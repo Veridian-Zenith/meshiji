@@ -30,6 +30,7 @@ jobs:
         sudo apt-get install -y \
           libpam0g-dev \
           liblua5.3-dev \
+          lua5.3 \
           pkg-config \
           cmake \
           clang \

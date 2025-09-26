@@ -37,6 +37,7 @@ jobs:
           pkg-config \
           cmake \
           clang \
+          g++ \
           polkitd \
           libpolkit-agent-1-dev \
           libpolkit-gobject-1-dev \
@@ -45,7 +46,7 @@ jobs:
     - name: Configure CMake
       run: |
         mkdir build && cd build
-        cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+        cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler == 'gcc' && 'g++' || 'clang++' }}
 
     - name: Build project
       run: |
@@ -55,7 +56,7 @@ jobs:
     - name: Run tests
       run: |
         cd build
-        ./voixcheck ../src/voix.conf.sample
+        ./voix check ../src/voix.conf.sample
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4

@@ -17,11 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-20.04, ubuntu-22.04]
-        compiler: [gcc, clang]
-        exclude:
-          - os: ubuntu-20.04
-            compiler: clang
+        os: [ubuntu-latest]
 
     steps:
     - name: Checkout repository
@@ -37,7 +33,6 @@ jobs:
           pkg-config \
           cmake \
           clang \
-          g++ \
           polkitd \
           libpolkit-agent-1-dev \
           libpolkit-gobject-1-dev \
@@ -46,7 +41,7 @@ jobs:
     - name: Configure CMake
       run: |
         mkdir build && cd build
-        cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler == 'gcc' && 'g++' || 'clang++' }}
+        cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
     - name: Build project
       run: |
@@ -61,7 +56,7 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: voix-${{ matrix.os }}-${{ matrix.compiler }}
+        name: voix-${{ matrix.os }}-clang
         path: build/
 
   # Security scanning

@@ -38,26 +38,31 @@ jobs:
           libpolkit-gobject-1-dev \
           libglib2.0-dev
 
-    - name: Configure CMake
-      run: |
-        mkdir build && cd build
-        cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
-
     - name: Build project
       run: |
-        cd build
-        make -j$(nproc)
+        echo "Building Voix..."
+        cd src
+        if [ -f "CMakeLists.txt" ]; then
+            mkdir -p build
+            cd build
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+            make -j$(nproc)
+            cd ..
+        else
+            echo "CMakeLists.txt not found, trying direct compilation..."
+            clang++ -std=c++17 -o voix main.cpp config.cpp utils.cpp auth.cpp polkit.cpp logging.cpp password.cpp lua_config.cpp env.cpp -I include -llua5.3 -lpam
+        fi
 
     - name: Run tests
       run: |
-        cd build
-        ./voix check ../src/voix.conf.sample
+        cd src/build
+        ./voix check ../voix.conf.sample
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: voix-${{ matrix.os }}-clang
-        path: build/
+        path: src/build/
 
   # Security scanning
   security:

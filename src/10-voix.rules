@@ -1,0 +1,49 @@
+// Voix Polkit Rules
+// This file maps Voix configuration rules to Polkit authorization decisions
+// Generated from /etc/voix.conf - do not edit manually
+
+polkit.addRule(function(action, subject) {
+    // Only handle Voix-specific actions
+    if (action.id.indexOf("org.veridian.voix.") !== 0) {
+        return polkit.Result.NOT_HANDLED;
+    }
+
+    // Get the command being executed
+    var command = action.lookup("command");
+    if (!command) {
+        return polkit.Result.AUTH_ADMIN;
+    }
+
+    // Check if this is a GUI session (X11 or Wayland)
+    var is_gui_session = false;
+    if (subject.session) {
+        var session_type = subject.session.lookup("session-type");
+        is_gui_session = (session_type && session_type !== "tty");
+    }
+
+    // For GUI sessions, prefer polkit's built-in auth caching
+    if (is_gui_session) {
+        return polkit.Result.AUTH_ADMIN_KEEP;
+    }
+
+    // For TTY sessions, fall back to traditional auth
+    return polkit.Result.AUTH_ADMIN;
+});
+
+// Specific rules for common commands
+polkit.addRule(function(action, subject) {
+    if (action.id === "org.veridian.voix.systemctl") {
+        // Allow systemctl status without auth for active sessions
+        if (subject.active) {
+            return polkit.Result.YES;
+        }
+        return polkit.Result.AUTH_ADMIN_KEEP;
+    }
+
+    if (action.id === "org.veridian.voix.package-management") {
+        // Package management always requires auth
+        return polkit.Result.AUTH_ADMIN;
+    }
+
+    return polkit.Result.NOT_HANDLED;
+});

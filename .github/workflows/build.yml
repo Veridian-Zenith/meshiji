@@ -36,7 +36,7 @@ jobs:
           polkitd \
           libpolkit-agent-1-dev \
           libpolkit-gobject-1-dev \
-          libgio-2.0-dev
+          libglib2.0-dev
 
     - name: Configure CMake
       run: |

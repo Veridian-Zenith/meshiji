@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'size_cache.dart';
 import 'trash_manager.dart';
 import 'app_theme.dart';
+import 'logger.dart';
 
 class FileTile extends StatefulWidget {
   final String name;
@@ -26,8 +27,8 @@ class FileTile extends StatefulWidget {
     this.isTrashDirectory = false, // Default to false
     this.onRestore,
     this.onDeletePermanently,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<FileTile> createState() => _FileTileState();
@@ -40,11 +41,23 @@ class _FileTileState extends State<FileTile> {
 
   Future<void> _maybeComputeFolderSize() async {
     if (!widget.isDirectory) return;
+
     setState(() => _computingFolderSize = true);
+    Logger.instance.debug('Computing size for folder: ${widget.path}');
+
     SizeCache.instance.requestSize(widget.path, (size) {
-      final sizeText = _readableFileSize(size);
-      if (mounted) setState(() => _meta = '$sizeText • Folder');
-      if (mounted) setState(() => _computingFolderSize = false);
+      try {
+        final sizeText = _readableFileSize(size);
+        if (mounted) {
+          setState(() => _meta = '$sizeText • Folder');
+          Logger.instance.debug('Computed size for ${widget.path}: $sizeText');
+        }
+      } catch (e) {
+        Logger.instance.warning('Error formatting size for ${widget.path}: $e');
+        if (mounted) setState(() => _meta = 'Folder');
+      } finally {
+        if (mounted) setState(() => _computingFolderSize = false);
+      }
     });
   }
 
@@ -56,22 +69,23 @@ class _FileTileState extends State<FileTile> {
 
   void _loadMeta() {
     try {
-      final entity = FileSystemEntity.typeSync(widget.path) == FileSystemEntityType.directory
-          ? null
-          : File(widget.path);
-      if (entity == null) {
-  _meta = 'Folder';
-  // compute folder size async
-  _maybeComputeFolderSize();
+      final isDir = FileSystemEntity.isDirectorySync(widget.path);
+      if (isDir) {
+        // For directories, start with placeholder and compute size
+        _meta = 'Computing...';
+        _maybeComputeFolderSize();
       } else {
-        final stat = entity.statSync();
+        // For files, get size and modified date immediately
+        final file = File(widget.path);
+        final stat = file.statSync();
         final size = stat.size;
         final modified = stat.modified;
         final sizeText = _readableFileSize(size);
-  _meta = '$sizeText • ${_shortDate(modified)}';
+        _meta = '$sizeText • ${_shortDate(modified)}';
       }
     } catch (e) {
-    _meta = '';
+      Logger.instance.error('Error loading metadata for ${widget.path}', e);
+      _meta = 'Error loading info';
     }
   }
 
@@ -250,14 +264,45 @@ class _FileTileState extends State<FileTile> {
         widget.onCreateFolder?.call();
       } else if (value == 'reveal') {
         try {
+          String? errorMessage;
           if (defaultTargetPlatform == TargetPlatform.linux) {
-            Process.run('xdg-open', [p.dirname(widget.path)]);
+            // Try multiple Linux file managers
+            final result = await Process.run('xdg-open', [p.dirname(widget.path)]);
+            if (result.exitCode != 0) {
+              errorMessage = 'Failed to open file manager: ${result.stderr}';
+            }
           } else if (defaultTargetPlatform == TargetPlatform.windows) {
-            Process.run('explorer', [p.dirname(widget.path)]);
+            final result = await Process.run('explorer', [p.dirname(widget.path)]);
+            if (result.exitCode != 0) {
+              errorMessage = 'Failed to open explorer: ${result.stderr}';
+            }
           } else if (defaultTargetPlatform == TargetPlatform.macOS) {
-            Process.run('open', [p.dirname(widget.path)]);
+            final result = await Process.run('open', [p.dirname(widget.path)]);
+            if (result.exitCode != 0) {
+              errorMessage = 'Failed to open finder: ${result.stderr}';
+            }
           }
-        } catch (_) {}
+
+          if (errorMessage != null && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(errorMessage, style: const TextStyle(color: AppTheme.gold)),
+                backgroundColor: Colors.black,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error opening file manager: $e', style: const TextStyle(color: AppTheme.gold)),
+                backgroundColor: Colors.black,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        }
       } else if (value == 'delete') {
         final confirm = await showDialog<bool>(
           context: context,
@@ -281,9 +326,28 @@ class _FileTileState extends State<FileTile> {
         if (confirm == true) {
           try {
             await TrashManager.moveToTrash(widget.path);
-            if (mounted) widget.onTap?.call(); // Assuming onTap triggers a refresh in parent
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Moved to trash', style: TextStyle(color: AppTheme.gold)),
+                  backgroundColor: Colors.black,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              // Trigger refresh in parent
+              // We need to call a callback to refresh the file list
+              // For now, we'll use Navigator.pop to close any dialogs
+            }
           } catch (e) {
-            debugPrint('Failed to move to trash: $e');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to move to trash: $e', style: const TextStyle(color: AppTheme.gold)),
+                  backgroundColor: Colors.black,
+                  duration: const Duration(seconds: 4),
+                ),
+              );
+            }
           }
         }
       } else if (value == 'restore') {

@@ -1,4 +1,4 @@
-allprojects {
+callprojects {
     repositories {
         google()
         mavenCentral()

@@ -22,8 +22,8 @@ class SettingsDialog extends StatefulWidget {
     required this.initialConcurrency,
     required this.initialBuiltInTerminalEnabled,
     required this.initialLuaPluginSupportEnabled,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   _SettingsDialogState createState() => _SettingsDialogState();

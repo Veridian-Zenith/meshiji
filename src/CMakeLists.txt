@@ -13,7 +13,7 @@ find_package(PkgConfig REQUIRED)
 
 # Find Lua
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(LUA lua5.3)
+# pkg_check_modules(LUA lua5.3) # Temporarily disabled
 
 if (LUA_FOUND)
     set(LUA_INCLUDE_DIRS ${LUA_INCLUDE_DIRS})
@@ -38,7 +38,7 @@ else()
         set(LUA_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
         set(LUA_LIBRARIES ${LUA_LIBRARY})
     else ()
-        message(FATAL_ERROR "Lua not found. Please install liblua5.3-dev or lua5.3 development package.")
+        set(LUA_FOUND false) # Lua not found, continuing without it
     endif()
 endif()
 

@@ -112,6 +112,7 @@ voix validate
 voix --config /path/to/custom.conf command
 ```
 
+<<<<<<< HEAD
 ## Development Status
 
 | Component | Status | Notes |

@@ -266,3 +266,10 @@ AGPLv3 - Same license as original Voix implementation.
 ---
 
 **Voix in Racket** - Where security meets expressiveness. Built with Racket's safety and C++ Voix's performance.
+
+
+© 2025 Veridian Zenith
+
+Code in this repository is licensed under the Open Software License v3.0 (OSL v3).  
+All visual designs, UI layouts, and assets are copyrighted by Veridian Zenith.  
+Use, modification, or redistribution of code or design assets is subject to compliance with these terms.

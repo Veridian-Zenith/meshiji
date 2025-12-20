@@ -1,33 +1,45 @@
-# Build artifacts
-/src/build/
-/build/
-*.o
-*.so
-*.a
-*.out
-*.bin
-voix
-voix-pam
-voix.md
-
-# IDE and editor files
-/.vscode/
-.idea/
-*.swp
-*~
-.DS_Store
-
-# Dependencies
-# If you use a package manacontinue please, it needs to compile into a single voix binaryger that creates a local directory for dependencies, add it here.
-# e.g., node_modules/
-
-# Logs and temporary files
+# Miscellaneous
+*.class
 *.log
-*.tmp
-/tmp/
-/.cache/
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
 
-# Configuration files that might contain sensitive information
-# config.local
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
 
-AUR/
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release

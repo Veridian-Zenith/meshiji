@@ -39,7 +39,10 @@ class TerminalService {
   static List<TerminalCommand> get history => List.unmodifiable(_history);
   static List<String> get commandHistory => List.unmodifiable(_commandHistory);
 
-  static Future<TerminalCommand> executeCommand(String command, {String? workingDirectory}) async {
+  static Future<TerminalCommand> executeCommand(
+    String command, {
+    String? workingDirectory,
+  }) async {
     final timestamp = DateTime.now();
     final args = _parseCommand(command);
 
@@ -92,7 +95,6 @@ class TerminalService {
 
       _addToHistory(commandResult);
       return commandResult;
-
     } catch (e) {
       final errorResult = TerminalCommand(
         command: args.isNotEmpty ? args[0] : 'unknown',
@@ -151,7 +153,10 @@ class TerminalService {
     return args.isNotEmpty ? args : [command.trim()];
   }
 
-  static Future<TerminalCommand> _handleCd(String path, DateTime timestamp) async {
+  static Future<TerminalCommand> _handleCd(
+    String path,
+    DateTime timestamp,
+  ) async {
     try {
       if (path.isEmpty || path == '~') {
         path = Platform.environment['HOME'] ?? '/';
@@ -220,9 +225,11 @@ class TerminalService {
   }
 
   static TerminalCommand _handleHistory(DateTime timestamp) {
-    final output = _commandHistory.asMap().entries.map((entry) =>
-      '${entry.key.toString().padLeft(4)}: ${entry.value}'
-    ).join('\n');
+    final output = _commandHistory
+        .asMap()
+        .entries
+        .map((entry) => '${entry.key.toString().padLeft(4)}: ${entry.value}')
+        .join('\n');
 
     final result = TerminalCommand(
       command: 'history',
@@ -264,7 +271,10 @@ External Commands:
     return result;
   }
 
-  static Future<TerminalCommand> _handleLs(String options, DateTime timestamp) async {
+  static Future<TerminalCommand> _handleLs(
+    String options,
+    DateTime timestamp,
+  ) async {
     try {
       final dir = Directory(_currentWorkingDirectory ?? Directory.current.path);
       final entities = await dir.list().toList();
@@ -303,7 +313,10 @@ External Commands:
     }
   }
 
-  static Future<TerminalCommand> _handleMkdir(String name, DateTime timestamp) async {
+  static Future<TerminalCommand> _handleMkdir(
+    String name,
+    DateTime timestamp,
+  ) async {
     try {
       if (name.isEmpty) {
         throw Exception('mkdir: missing operand');
@@ -311,7 +324,8 @@ External Commands:
 
       final dir = Directory(name);
       if (!name.startsWith('/')) {
-        final fullPath = '${_currentWorkingDirectory ?? Directory.current.path}/$name';
+        final fullPath =
+            '${_currentWorkingDirectory ?? Directory.current.path}/$name';
         await Directory(fullPath).create(recursive: true);
       } else {
         await dir.create(recursive: true);
@@ -340,7 +354,10 @@ External Commands:
     }
   }
 
-  static Future<TerminalCommand> _handleTouch(String name, DateTime timestamp) async {
+  static Future<TerminalCommand> _handleTouch(
+    String name,
+    DateTime timestamp,
+  ) async {
     try {
       if (name.isEmpty) {
         throw Exception('touch: missing file operand');
@@ -348,7 +365,8 @@ External Commands:
 
       final file = File(name);
       if (!name.startsWith('/')) {
-        final fullPath = '${_currentWorkingDirectory ?? Directory.current.path}/$name';
+        final fullPath =
+            '${_currentWorkingDirectory ?? Directory.current.path}/$name';
         await File(fullPath).create();
       } else {
         await file.create();
@@ -377,7 +395,10 @@ External Commands:
     }
   }
 
-  static Future<TerminalCommand> _handleRm(String path, DateTime timestamp) async {
+  static Future<TerminalCommand> _handleRm(
+    String path,
+    DateTime timestamp,
+  ) async {
     try {
       if (path.isEmpty) {
         throw Exception('rm: missing operand');
@@ -420,7 +441,10 @@ External Commands:
     }
   }
 
-  static Future<TerminalCommand> _handleCp(String args, DateTime timestamp) async {
+  static Future<TerminalCommand> _handleCp(
+    String args,
+    DateTime timestamp,
+  ) async {
     try {
       final parts = args.split(' ');
       if (parts.length < 2) {
@@ -470,7 +494,10 @@ External Commands:
     }
   }
 
-  static Future<TerminalCommand> _handleMv(String args, DateTime timestamp) async {
+  static Future<TerminalCommand> _handleMv(
+    String args,
+    DateTime timestamp,
+  ) async {
     try {
       final parts = args.split(' ');
       if (parts.length < 2) {
@@ -527,11 +554,15 @@ External Commands:
     return result;
   }
 
-  static Future<void> _copyDirectory(Directory source, Directory destination) async {
+  static Future<void> _copyDirectory(
+    Directory source,
+    Directory destination,
+  ) async {
     await destination.create(recursive: true);
 
     await for (final entity in source.list()) {
-      final newPath = '${destination.path}/${entity.path.split(Platform.pathSeparator).last}';
+      final newPath =
+          '${destination.path}/${entity.path.split(Platform.pathSeparator).last}';
 
       if (entity is File) {
         await entity.copy(newPath);

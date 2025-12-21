@@ -102,7 +102,9 @@ class _FileExplorerScreenState extends State<FileExplorerScreen>
       // Debug: Log hidden files count
       final hiddenFiles = files.where((file) => file.isHidden).length;
       final totalFiles = files.length;
-      debugPrint('Hidden files toggle: $_showHidden, Found $hiddenFiles hidden files out of $totalFiles total');
+      debugPrint(
+        'Hidden files toggle: $_showHidden, Found $hiddenFiles hidden files out of $totalFiles total',
+      );
 
       files.sort((a, b) {
         if (a.isDirectory && !b.isDirectory) return -1;
@@ -416,8 +418,9 @@ class _FileExplorerScreenState extends State<FileExplorerScreen>
                     ),
                   ),
                   ...parts.asMap().entries.map((entry) {
-                    if (entry.key == 0 && entry.value.isEmpty)
+                    if (entry.key == 0 && entry.value.isEmpty) {
                       return const SizedBox();
+                    }
                     final isLast = entry.key == parts.length - 1;
                     final currentPath = parts
                         .sublist(0, entry.key + 1)

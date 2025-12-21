@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../utils/app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -71,7 +70,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     SwitchListTile(
                       title: const Text('Show Hidden Files'),
-                      subtitle: const Text('Display hidden files and directories'),
+                      subtitle: const Text(
+                        'Display hidden files and directories',
+                      ),
                       value: _showHiddenFiles,
                       onChanged: (value) {
                         setState(() {
@@ -82,9 +83,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     ListTile(
                       title: const Text('Default Directory'),
-                      subtitle: Text(_defaultDirectory.isEmpty
-                          ? 'Not set (uses home directory)'
-                          : _defaultDirectory),
+                      subtitle: Text(
+                        _defaultDirectory.isEmpty
+                            ? 'Not set (uses home directory)'
+                            : _defaultDirectory,
+                      ),
                       trailing: const Icon(Icons.folder),
                       onTap: () async {
                         // In a real implementation, you would use a file picker here
@@ -97,7 +100,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               decoration: const InputDecoration(
                                 hintText: 'Enter directory path',
                               ),
-                              controller: TextEditingController(text: _defaultDirectory),
+                              controller: TextEditingController(
+                                text: _defaultDirectory,
+                              ),
                               onSubmitted: (value) {
                                 Navigator.pop(context, value);
                               },
@@ -205,7 +210,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 label: const Text('Save All Settings'),
                 onPressed: _saveSettings,
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ),

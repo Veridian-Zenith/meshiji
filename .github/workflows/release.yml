@@ -47,7 +47,7 @@ jobs:
 
             ## 📦 Downloads
 
-            - [Linux AppImage](meshiji-linux-x64.tar.gz)
+            - [Linux Binary](meshiji-linux-x64.tar.gz)
 
             ## 🛠️ Build Information
 
@@ -60,3 +60,16 @@ jobs:
             See the commit history for detailed changes.
           files: |
             build/linux/x64/release/bundle/meshiji
+            build/linux/x64/release/bundle/lib/libapp.so
+            build/linux/x64/release/bundle/lib/libflutter_linux_gtk.so
+            build/linux/x64/release/bundle/data/icudtl.dat
+            build/linux/x64/release/bundle/data/flutter_assets/AssetManifest.bin
+            build/linux/x64/release/bundle/data/flutter_assets/FontManifest.json
+            build/linux/x64/release/bundle/data/flutter_assets/NativeAssetsManifest.json
+            build/linux/x64/release/bundle/data/flutter_assets/NOTICES.Z
+            build/linux/x64/release/bundle/data/flutter_assets/version.json
+            build/linux/x64/release/bundle/data/flutter_assets/fonts/Delius-Regular.ttf
+            build/linux/x64/release/bundle/data/flutter_assets/fonts/MaterialIcons-Regular.otf
+            build/linux/x64/release/bundle/data/flutter_assets/packages/cupertino_icons/assets/CupertinoIcons.ttf
+            build/linux/x64/release/bundle/data/flutter_assets/shaders/ink_sparkle.frag
+            build/linux/x64/release/bundle/data/flutter_assets/shaders/stretch_effect.frag

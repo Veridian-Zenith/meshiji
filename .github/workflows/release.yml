@@ -1,0 +1,76 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on tags like v1.0.0, v2.3.4, etc.
+
+permissions:
+  contents: write  # Needed to create a release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Linux release
+        run: |
+          flutter config --enable-linux-desktop
+          flutter build linux --release
+
+      - name: Build Windows release
+        run: |
+          flutter config --enable-windows-desktop
+          flutter build windows --release
+
+      - name: Build macOS release
+        run: |
+          flutter config --enable-macos-desktop
+          flutter build macos --release
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: 'Meshiji v${{ github.ref_name }}'
+          body: |
+            ## 🚀 Meshiji v${{ github.ref_name }} Release
+
+            This release includes:
+
+            - Complete code organization improvements
+            - Comprehensive keyboard shortcuts
+            - Linux XDG trash system compliance
+            - Enhanced error handling and performance optimizations
+
+            ## 📦 Downloads
+
+            - [Linux AppImage](meshiji-linux-x64.tar.gz)
+            - [Windows Executable](meshiji-windows-x64.zip)
+            - [macOS Application](meshiji-macos-x64.zip)
+
+            ## 🛠️ Build Information
+
+            - Flutter Version: 3.22.0
+            - Target Platforms: Linux, Windows, macOS
+            - Release Type: Production
+
+            ## 📋 Changelog
+
+            See the commit history for detailed changes.
+          files: |
+            build/linux/x64/release/bundle/meshiji
+            build/windows/x64/runner/Release/meshiji.exe
+            build/macos/Build/Products/Release/meshiji.app

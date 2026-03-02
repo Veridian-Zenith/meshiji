@@ -1,6 +1,10 @@
 # meshiji
 
-A new Flutter project.
+A Flutter File Explorer created by Veridian Zenith.
+
+## License
+
+This project is licensed under the Open Software License (OSL) v3.0. See the [LICENSE](LICENSE) file for details.
 
 ## Getting Started
 

@@ -47,7 +47,7 @@ jobs:
             libxi-dev \
             libxrandr-dev \
             libxrender-dev \
-            libxtst-devcd
+            libxtst-dev
 
       - name: Build Linux release
         run: |

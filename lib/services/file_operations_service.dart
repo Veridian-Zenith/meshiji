@@ -194,7 +194,7 @@ class FileOperationsService {
 
   static Future<FileOperationsResult> restoreFromTrash(String trashItemPath, String restorePath) async {
     try {
-      if (!await FileSystemEntity.exists(trashItemPath)) {
+      if (!await File(trashItemPath).exists() && !await Directory(trashItemPath).exists()) {
         return FileOperationsResult.error('Item not found in trash');
       }
 
@@ -202,7 +202,7 @@ class FileOperationsService {
       final restoreFilePath = '$restorePath/$fileName';
 
       // Check if file already exists at restore location
-      if (await FileSystemEntity.exists(restoreFilePath)) {
+      if (await File(restoreFilePath).exists() || await Directory(restoreFilePath).exists()) {
         return FileOperationsResult.error('A file with this name already exists at the restore location');
       }
 

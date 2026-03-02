@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path_util;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/file_item.dart';
@@ -9,6 +10,19 @@ import '../utils/app_theme.dart';
 import '../widgets/meshiji_ui.dart';
 import '../widgets/file_list_builder.dart';
 import '../screens/settings/settings_screen.dart';
+
+// Keyboard shortcut intent classes
+class _HomeDirectoryIntent extends Intent {}
+class _ParentDirectoryIntent extends Intent {}
+class _FocusSearchIntent extends Intent {}
+class _CopyFilesIntent extends Intent {}
+class _PasteFilesIntent extends Intent {}
+class _DeleteFilesIntent extends Intent {}
+class _ListViewIntent extends Intent {}
+class _GridViewIntent extends Intent {}
+class _RefreshDirectoryIntent extends Intent {}
+class _ToggleTerminalIntent extends Intent {}
+class _ClearTerminalIntent extends Intent {}
 
 class FileExplorerScreen extends StatefulWidget {
   const FileExplorerScreen({super.key});
@@ -646,96 +660,174 @@ class _FileExplorerScreenState extends State<FileExplorerScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundBlack,
-      appBar: AppBar(
-        title: const Text(
-          'Meshiji',
-          style: TextStyle(
-            color: AppTheme.primaryRed,
-            fontSize: 28,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 8,
+    return Shortcuts(
+      shortcuts: {
+        // Navigation shortcuts
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyH): _HomeDirectoryIntent(),
+        LogicalKeySet(LogicalKeyboardKey.alt, LogicalKeyboardKey.arrowUp): _ParentDirectoryIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyL): _FocusSearchIntent(),
+
+        // File operations
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyC): _CopyFilesIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyV): _PasteFilesIntent(),
+        SingleActivator(LogicalKeyboardKey.delete): _DeleteFilesIntent(),
+
+        // View controls
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.digit1): _ListViewIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.digit2): _GridViewIntent(),
+        SingleActivator(LogicalKeyboardKey.f5): _RefreshDirectoryIntent(),
+
+        // Terminal shortcuts
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyT): _ToggleTerminalIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyK): _ClearTerminalIntent(),
+      },
+      child: Actions(
+        actions: {
+          _HomeDirectoryIntent: CallbackAction<_HomeDirectoryIntent>(
+            onInvoke: (intent) => _navigateToHome(),
           ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
+          _ParentDirectoryIntent: CallbackAction<_ParentDirectoryIntent>(
+            onInvoke: (intent) => _navigateToParent(),
+          ),
+          _FocusSearchIntent: CallbackAction<_FocusSearchIntent>(
+            onInvoke: (intent) {
+              _searchController.clear();
+              setState(() => _searchQuery = '');
+              _loadDirectory();
+              return null;
             },
-            icon: const Icon(Icons.settings, color: AppTheme.primaryRed),
-            tooltip: 'Settings',
           ),
-          IconButton(
-            onPressed: () =>
-                setState(() => _terminalVisible = !_terminalVisible),
-            icon: Icon(
-              _terminalVisible ? Icons.keyboard_arrow_down : Icons.terminal,
-              color: _terminalVisible ? Colors.white : AppTheme.primaryRed,
-            ),
-            tooltip: 'Terminal',
+          _CopyFilesIntent: CallbackAction<_CopyFilesIntent>(
+            onInvoke: (intent) => _copyFiles(),
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _buildBreadcrumb(),
-                const SizedBox(height: 12),
-                _buildToolbar(),
-                const SizedBox(height: 12),
-                _buildSearchBar(),
-              ],
-            ),
+          _PasteFilesIntent: CallbackAction<_PasteFilesIntent>(
+            onInvoke: (intent) => _moveFiles(),
           ),
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: AppTheme.glassBlack,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.primaryRed.withOpacity(0.3)),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: _buildFileList(),
-              ),
-            ),
+          _DeleteFilesIntent: CallbackAction<_DeleteFilesIntent>(
+            onInvoke: (intent) => _deleteSelected(),
           ),
-          if (_terminalVisible) _buildTerminal(),
-        ],
-      ),
-      floatingActionButton: _selectedFiles.isNotEmpty
-          ? Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
+          _ListViewIntent: CallbackAction<_ListViewIntent>(
+            onInvoke: (intent) {
+              setState(() => _viewMode = ViewMode.list);
+              return null;
+            },
+          ),
+          _GridViewIntent: CallbackAction<_GridViewIntent>(
+            onInvoke: (intent) {
+              setState(() => _viewMode = ViewMode.grid);
+              return null;
+            },
+          ),
+          _RefreshDirectoryIntent: CallbackAction<_RefreshDirectoryIntent>(
+            onInvoke: (intent) => _loadDirectory(),
+          ),
+          _ToggleTerminalIntent: CallbackAction<_ToggleTerminalIntent>(
+            onInvoke: (intent) {
+              setState(() => _terminalVisible = !_terminalVisible);
+              return null;
+            },
+          ),
+          _ClearTerminalIntent: CallbackAction<_ClearTerminalIntent>(
+            onInvoke: (intent) {
+              setState(() {
+                _terminalHistory.clear();
+              });
+              return null;
+            },
+          ),
+        },
+        child: Scaffold(
+          backgroundColor: AppTheme.backgroundBlack,
+          appBar: AppBar(
+            title: const Text(
+              'Meshiji',
+              style: TextStyle(
                 color: AppTheme.primaryRed,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primaryRed.withOpacity(0.3),
-                    blurRadius: 12,
-                    spreadRadius: 2,
-                  ),
-                ],
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 8,
               ),
-              child: Text(
-                '${_selectedFiles.length} selected',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            actions: [
+              IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                  );
+                },
+                icon: const Icon(Icons.settings, color: AppTheme.primaryRed),
+                tooltip: 'Settings',
+              ),
+              IconButton(
+                onPressed: () =>
+                    setState(() => _terminalVisible = !_terminalVisible),
+                icon: Icon(
+                  _terminalVisible ? Icons.keyboard_arrow_down : Icons.terminal,
+                  color: _terminalVisible ? Colors.white : AppTheme.primaryRed,
+                ),
+                tooltip: 'Terminal',
+              ),
+            ],
+          ),
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _buildBreadcrumb(),
+                    const SizedBox(height: 12),
+                    _buildToolbar(),
+                    const SizedBox(height: 12),
+                    _buildSearchBar(),
+                  ],
                 ),
               ),
-            )
-          : null,
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.glassBlack,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppTheme.primaryRed.withOpacity(0.3)),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: _buildFileList(),
+                  ),
+                ),
+              ),
+              if (_terminalVisible) _buildTerminal(),
+            ],
+          ),
+          floatingActionButton: _selectedFiles.isNotEmpty
+              ? Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryRed,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryRed.withOpacity(0.3),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    '${_selectedFiles.length} selected',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                )
+              : null,
+        ),
+      ),
     );
   }
 }

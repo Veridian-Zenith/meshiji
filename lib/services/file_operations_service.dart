@@ -123,7 +123,7 @@ class FileOperationsService {
 
         for (final item in items) {
           try {
-            final trashItemPath = _getTrashItemPath(trashPath, item);
+            final trashItemPath = await _getTrashItemPath(trashPath, item);
             if (item.isDirectory) {
               await Directory(item.path).rename(trashItemPath);
             } else {
@@ -145,14 +145,16 @@ class FileOperationsService {
   static Future<String> _getTrashPath() async {
     final homeDir = Platform.environment['HOME'] ?? '/';
     final trashDir = '$homeDir/.local/share/Trash/files';
+    final infoDir = '$homeDir/.local/share/Trash/info';
 
-    // Create trash directory if it doesn't exist
+    // Create both trash directories if they don't exist
     await Directory(trashDir).create(recursive: true);
+    await Directory(infoDir).create(recursive: true);
 
     return trashDir;
   }
 
-  static String _getTrashItemPath(String trashPath, FileItem item) {
+  static Future<String> _getTrashItemPath(String trashPath, FileItem item) async {
     final fileName = item.name;
     final fileExtension = item.extension ?? '';
     final baseName = fileExtension.isNotEmpty
@@ -163,7 +165,7 @@ class FileOperationsService {
     var counter = 0;
     var trashItemPath = '$trashPath/$fileName';
 
-    while (await FileSystemEntity.exists(trashItemPath)) {
+    while (await File(trashItemPath).exists() || await Directory(trashItemPath).exists()) {
       counter++;
       trashItemPath = fileExtension.isNotEmpty
           ? '$trashPath/${baseName}_$counter$fileExtension'

@@ -237,8 +237,8 @@ class _FileExplorerScreenState extends State<FileExplorerScreen>
     if (_selectedFiles.isEmpty) return;
 
     final confirmed = await _showConfirmationDialog(
-      'Delete ${_selectedFiles.length} item(s)?',
-      'This action cannot be undone.',
+      'Move ${_selectedFiles.length} item(s) to trash?',
+      'Items will be moved to trash and can be restored later.',
     );
 
     if (!confirmed) return;
@@ -246,7 +246,7 @@ class _FileExplorerScreenState extends State<FileExplorerScreen>
     // Clear folder size cache before file operations
     FileItem.clearFolderSizeCache();
 
-    final result = await FileOperationsService.delete(_selectedFiles);
+    final result = await FileOperationsService.delete(_selectedFiles, permanent: false);
     if (result.success) {
       _showSuccessSnackBar(result.message!);
       _clearSelection();

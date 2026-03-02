@@ -106,17 +106,128 @@ class FileOperationsService {
     bool permanent = false,
   }) async {
     try {
-      for (final item in items) {
-        if (item.isDirectory) {
-          await Directory(item.path).delete(recursive: true);
-        } else {
-          await File(item.path).delete();
+      if (permanent) {
+        // Permanent deletion
+        for (final item in items) {
+          if (item.isDirectory) {
+            await Directory(item.path).delete(recursive: true);
+          } else {
+            await File(item.path).delete();
+          }
         }
-      }
+        return FileOperationsResult.success('Permanently deleted ${items.length} item(s)');
+      } else {
+        // Move to trash/recycle bin
+        final trashPath = await _getTrashPath();
+        final movedItems = <String>[];
 
-      return FileOperationsResult.success('Deleted ${items.length} item(s)');
+        for (final item in items) {
+          try {
+            final trashItemPath = _getTrashItemPath(trashPath, item);
+            if (item.isDirectory) {
+              await Directory(item.path).rename(trashItemPath);
+            } else {
+              await File(item.path).rename(trashItemPath);
+            }
+            movedItems.add(item.name);
+          } catch (e) {
+            return FileOperationsResult.error('Failed to move ${item.name} to trash: ${e.toString()}');
+          }
+        }
+
+        return FileOperationsResult.success('Moved ${movedItems.length} item(s) to trash');
+      }
     } catch (e) {
       return FileOperationsResult.error('Failed to delete: ${e.toString()}');
+    }
+  }
+
+  static Future<String> _getTrashPath() async {
+    final homeDir = Platform.environment['HOME'] ?? '/';
+    final trashDir = '$homeDir/.local/share/Trash/files';
+
+    // Create trash directory if it doesn't exist
+    await Directory(trashDir).create(recursive: true);
+
+    return trashDir;
+  }
+
+  static String _getTrashItemPath(String trashPath, FileItem item) {
+    final fileName = item.name;
+    final fileExtension = item.extension ?? '';
+    final baseName = fileExtension.isNotEmpty
+        ? fileName.substring(0, fileName.length - fileExtension.length - 1)
+        : fileName;
+
+    // Check if file with same name already exists in trash
+    var counter = 0;
+    var trashItemPath = '$trashPath/$fileName';
+
+    while (await FileSystemEntity.exists(trashItemPath)) {
+      counter++;
+      trashItemPath = fileExtension.isNotEmpty
+          ? '$trashPath/${baseName}_$counter$fileExtension'
+          : '$trashPath/${fileName}_$counter';
+    }
+
+    return trashItemPath;
+  }
+
+  static Future<FileOperationsResult> emptyTrash() async {
+    try {
+      final trashPath = await _getTrashPath();
+      final trashDir = Directory(trashPath);
+
+      if (await trashDir.exists()) {
+        await trashDir.delete(recursive: true);
+        await _getTrashPath(); // Recreate trash directory
+        return FileOperationsResult.success('Trash emptied successfully');
+      } else {
+        return FileOperationsResult.success('Trash is already empty');
+      }
+    } catch (e) {
+      return FileOperationsResult.error('Failed to empty trash: ${e.toString()}');
+    }
+  }
+
+  static Future<FileOperationsResult> restoreFromTrash(String trashItemPath, String restorePath) async {
+    try {
+      if (!await FileSystemEntity.exists(trashItemPath)) {
+        return FileOperationsResult.error('Item not found in trash');
+      }
+
+      final fileName = trashItemPath.split('/').last;
+      final restoreFilePath = '$restorePath/$fileName';
+
+      // Check if file already exists at restore location
+      if (await FileSystemEntity.exists(restoreFilePath)) {
+        return FileOperationsResult.error('A file with this name already exists at the restore location');
+      }
+
+      await File(trashItemPath).rename(restoreFilePath);
+      return FileOperationsResult.success('Item restored successfully');
+    } catch (e) {
+      return FileOperationsResult.error('Failed to restore item: ${e.toString()}');
+    }
+  }
+
+  static Future<List<String>> getTrashContents() async {
+    try {
+      final trashPath = await _getTrashPath();
+      final trashDir = Directory(trashPath);
+
+      if (!await trashDir.exists()) {
+        return [];
+      }
+
+      final List<String> items = [];
+      await for (final entity in trashDir.list()) {
+        items.add(entity.path);
+      }
+
+      return items;
+    } catch (e) {
+      return [];
     }
   }
 

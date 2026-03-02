@@ -7,6 +7,7 @@ import '../services/file_operations_service.dart';
 import '../services/terminal_service.dart';
 import '../utils/app_theme.dart';
 import '../widgets/meshiji_ui.dart';
+import '../widgets/file_list_builder.dart';
 import '../screens/settings/settings_screen.dart';
 
 class FileExplorerScreen extends StatefulWidget {
@@ -382,79 +383,13 @@ class _FileExplorerScreenState extends State<FileExplorerScreen>
   }
 
   Widget _buildBreadcrumb() {
-    final parts = _currentPath.split('/');
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppTheme.glassBlack,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.primaryRed.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: _navigateToHome,
-            icon: const Icon(Icons.home, color: AppTheme.primaryRed),
-            tooltip: 'Home',
-          ),
-          IconButton(
-            onPressed: _navigateToParent,
-            icon: const Icon(Icons.arrow_upward, color: AppTheme.primaryRed),
-            tooltip: 'Parent Directory',
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  TextButton(
-                    onPressed: () => _navigateToDirectory('/'),
-                    child: const Text(
-                      '/',
-                      style: TextStyle(color: AppTheme.primaryRed),
-                    ),
-                  ),
-                  ...parts.asMap().entries.map((entry) {
-                    if (entry.key == 0 && entry.value.isEmpty) {
-                      return const SizedBox();
-                    }
-                    final isLast = entry.key == parts.length - 1;
-                    final currentPath = parts
-                        .sublist(0, entry.key + 1)
-                        .join('/');
-
-                    return Row(
-                      children: [
-                        const Text(
-                          ' / ',
-                          style: TextStyle(color: Colors.white54),
-                        ),
-                        if (isLast)
-                          Text(
-                            entry.value,
-                            style: const TextStyle(color: Colors.white),
-                          )
-                        else
-                          TextButton(
-                            onPressed: () => _navigateToDirectory(currentPath),
-                            child: Text(
-                              entry.value,
-                              style: const TextStyle(
-                                color: AppTheme.primaryRed,
-                              ),
-                            ),
-                          ),
-                      ],
-                    );
-                  }),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    final breadcrumbBuilder = BreadcrumbBuilder(
+      currentPath: _currentPath,
+      onHomeTap: _navigateToHome,
+      onParentTap: _navigateToParent,
+      onPathTap: _navigateToDirectory,
     );
+    return breadcrumbBuilder.build();
   }
 
   Widget _buildToolbar() {
@@ -574,31 +509,15 @@ class _FileExplorerScreenState extends State<FileExplorerScreen>
   }
 
   Widget _buildFileList() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppTheme.primaryRed),
-      );
-    }
-
-    if (_files.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.folder_open, size: 64, color: Colors.white24),
-            const SizedBox(height: 16),
-            Text(
-              'This folder is empty',
-              style: TextStyle(
-                color: Colors.white54,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+    final fileListBuilder = FileListBuilder(
+      files: _files,
+      selectedFiles: _selectedFiles,
+      folderSizes: _folderSizes,
+      onFileTap: _openFile,
+      onFileSecondaryTap: _showFileContextMenu,
+      onToggleSelection: _toggleFileSelection,
+      isLoading: _isLoading,
+    );
 
     return AnimatedBuilder(
       animation: _fadeAnimation,
@@ -606,146 +525,8 @@ class _FileExplorerScreenState extends State<FileExplorerScreen>
         return FadeTransition(
           opacity: _fadeAnimation,
           child: _viewMode == ViewMode.list
-              ? _buildListView()
-              : _buildGridView(),
-        );
-      },
-    );
-  }
-
-  Widget _buildListView() {
-    return ListView.builder(
-      itemCount: _files.length,
-      itemBuilder: (context, index) {
-        final file = _files[index];
-        final isSelected = _selectedFiles.contains(file);
-
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          child: Material(
-            color: isSelected
-                ? AppTheme.primaryRed.withOpacity(0.2)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: () => _openFile(file),
-              onSecondaryTap: () => _showFileContextMenu(file),
-              child: ListTile(
-                leading: Icon(
-                  file.isDirectory ? Icons.folder : _getFileIcon(file),
-                  color: isSelected ? Colors.white : AppTheme.primaryRed,
-                  size: 28,
-                ),
-                title: Text(
-                  file.name,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.white,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                  ),
-                ),
-                subtitle: Text(
-                  file.isDirectory
-                      ? 'Folder • ${_folderSizes[file.path] ?? 'Calculating...'}'
-                      : '${file.type} • ${file.formattedSize}',
-                  style: TextStyle(
-                    color: isSelected ? Colors.white70 : Colors.white54,
-                    fontSize: 12,
-                  ),
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      file.modified != null ? _formatDate(file.modified!) : '',
-                      style: TextStyle(
-                        color: isSelected ? Colors.white70 : Colors.white54,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Checkbox(
-                      value: isSelected,
-                      onChanged: (value) => _toggleFileSelection(file),
-                      activeColor: AppTheme.primaryRed,
-                      checkColor: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildGridView() {
-    return GridView.builder(
-      padding: const EdgeInsets.all(8),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        childAspectRatio: 0.8,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-      ),
-      itemCount: _files.length,
-      itemBuilder: (context, index) {
-        final file = _files[index];
-        final isSelected = _selectedFiles.contains(file);
-
-        return GestureDetector(
-          onTap: () => _openFile(file),
-          onSecondaryTap: () => _showFileContextMenu(file),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppTheme.primaryRed.withOpacity(0.2)
-                  : AppTheme.glassBlack,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isSelected
-                    ? AppTheme.primaryRed
-                    : AppTheme.primaryRed.withOpacity(0.3),
-              ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  file.isDirectory ? Icons.folder : _getFileIcon(file),
-                  color: isSelected ? Colors.white : AppTheme.primaryRed,
-                  size: 48,
-                ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(
-                    file.name,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.white,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.normal,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                if (isSelected)
-                  const Icon(
-                    Icons.check_circle,
-                    color: AppTheme.primaryRed,
-                    size: 16,
-                  ),
-              ],
-            ),
-          ),
+              ? fileListBuilder.buildListView()
+              : fileListBuilder.buildGridView(),
         );
       },
     );
@@ -852,157 +633,15 @@ class _FileExplorerScreenState extends State<FileExplorerScreen>
   }
 
   Widget _buildTerminal() {
-    return Container(
-      height: 300,
-      decoration: BoxDecoration(
-        color: const Color(0xFF0A0A0A),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-        border: Border.all(color: AppTheme.primaryRed.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppTheme.glassBlack,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
-              ),
-              border: Border(
-                bottom: BorderSide(color: AppTheme.primaryRed.withOpacity(0.3)),
-              ),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.terminal, color: AppTheme.primaryRed),
-                const SizedBox(width: 8),
-                const Text(
-                  'Terminal',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => setState(() => _terminalVisible = false),
-                  icon: const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Colors.white54,
-                  ),
-                  tooltip: 'Hide Terminal',
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              child: ListView.builder(
-                controller: _terminalScrollController,
-                itemCount: _terminalHistory.length,
-                itemBuilder: (context, index) {
-                  final command = _terminalHistory[index];
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 4),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppTheme.primaryRed.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '\$ ${command.command} ${command.arguments}',
-                                style: const TextStyle(
-                                  color: AppTheme.primaryRed,
-                                  fontFamily: 'monospace',
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (command.output.isNotEmpty)
-                          Text(
-                            command.output,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'monospace',
-                              fontSize: 12,
-                            ),
-                          ),
-                        if (command.error != null)
-                          Text(
-                            command.error!,
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontFamily: 'monospace',
-                              fontSize: 12,
-                            ),
-                          ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(color: AppTheme.primaryRed.withOpacity(0.3)),
-              ),
-            ),
-            child: Row(
-              children: [
-                const Text(
-                  '\$',
-                  style: TextStyle(
-                    color: AppTheme.primaryRed,
-                    fontFamily: 'monospace',
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _terminalController,
-                    focusNode: _terminalFocusNode,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Enter command...',
-                      hintStyle: TextStyle(
-                        color: Colors.white54,
-                        fontFamily: 'monospace',
-                      ),
-                    ),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'monospace',
-                      fontSize: 14,
-                    ),
-                    onSubmitted: (_) => _executeTerminalCommand(),
-                  ),
-                ),
-                IconButton(
-                  onPressed: _executeTerminalCommand,
-                  icon: const Icon(Icons.send, color: AppTheme.primaryRed),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    final terminalBuilder = TerminalBuilder(
+      history: _terminalHistory,
+      controller: _terminalController,
+      scrollController: _terminalScrollController,
+      focusNode: _terminalFocusNode,
+      onCommandSubmit: _executeTerminalCommand,
+      onHideTerminal: () => setState(() => _terminalVisible = false),
     );
+    return terminalBuilder.build();
   }
 
   @override

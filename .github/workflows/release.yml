@@ -49,9 +49,6 @@ jobs:
             libxrender-dev \
             libxtst-dev
 
-      - name: Enable Linux desktop
-        run: flutter config --enable-linux-desktop
-
       - name: Build Linux release
         run: flutter build linux --release
 
@@ -88,4 +85,4 @@ jobs:
             ## 📋 Changelog
 
             See the commit history for detailed changes.
-          files: build/linux/x64/meshiji-linux-x64.tar.xz
+          files: build/linux/meshiji-linux-x64.tar.xz

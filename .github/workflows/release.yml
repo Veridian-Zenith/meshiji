@@ -3,13 +3,13 @@ name: Create Release
 on:
   push:
     tags:
-      - 'v*'  # Triggers on tags like v1.0.0, v2.3.4, etc.
+      - 'v*'  # Trigger on tags like v1.0.0, v2.3.4, etc.
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (e.g., v1.1.0)'
+        description: 'Version to release (e.g., v1.2.0)'
         required: true
-        default: 'v1.1.0'
+        default: 'v1.x.x'
 
 permissions:
   contents: write  # Needed to create a release
@@ -49,10 +49,16 @@ jobs:
             libxrender-dev \
             libxtst-dev
 
+      - name: Enable Linux desktop
+        run: flutter config --enable-linux-desktop
+
       - name: Build Linux release
+        run: flutter build linux --release
+
+      - name: Package Linux release as tar.xz
         run: |
-          flutter config --enable-linux-desktop
-          flutter build linux --release
+          cd build/linux/x64/release/bundle
+          tar -cJf ../../../meshiji-linux-x64.tar.xz *
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -71,29 +77,15 @@ jobs:
 
             ## 📦 Downloads
 
-            - [Linux Binary](meshiji-linux-x64.tar.gz)
+            - [Linux Binary](meshiji-linux-x64.tar.xz)
 
             ## 🛠️ Build Information
 
-            - Flutter Version: 3.22.0
+            - Flutter Version: 3.41.2
             - Target Platforms: Linux
             - Release Type: Production
 
             ## 📋 Changelog
 
             See the commit history for detailed changes.
-          files: |
-            build/linux/x64/release/bundle/meshiji
-            build/linux/x64/release/bundle/lib/libapp.so
-            build/linux/x64/release/bundle/lib/libflutter_linux_gtk.so
-            build/linux/x64/release/bundle/data/icudtl.dat
-            build/linux/x64/release/bundle/data/flutter_assets/AssetManifest.bin
-            build/linux/x64/release/bundle/data/flutter_assets/FontManifest.json
-            build/linux/x64/release/bundle/data/flutter_assets/NativeAssetsManifest.json
-            build/linux/x64/release/bundle/data/flutter_assets/NOTICES.Z
-            build/linux/x64/release/bundle/data/flutter_assets/version.json
-            build/linux/x64/release/bundle/data/flutter_assets/fonts/Delius-Regular.ttf
-            build/linux/x64/release/bundle/data/flutter_assets/fonts/MaterialIcons-Regular.otf
-            build/linux/x64/release/bundle/data/flutter_assets/packages/cupertino_icons/assets/CupertinoIcons.ttf
-            build/linux/x64/release/bundle/data/flutter_assets/shaders/ink_sparkle.frag
-            build/linux/x64/release/bundle/data/flutter_assets/shaders/stretch_effect.frag
+          files: build/linux/x64/meshiji-linux-x64.tar.xz

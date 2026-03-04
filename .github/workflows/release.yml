@@ -74,7 +74,7 @@ jobs:
 
             ## 📦 Downloads
 
-            - [Linux Binary](meshiji-linux-x64.tar.xz)
+            - [Linux Binary](https://github.com/Veridian-Zenith/meshiji/releases/download/master/meshiji-linux-x64.tar.xz)
 
             ## 🛠️ Build Information
 

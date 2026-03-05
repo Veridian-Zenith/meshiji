@@ -61,9 +61,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: 'Meshiji v${{ github.ref_name }}'
+          name: 'Meshiji ${{ github.ref_name }}'
           body: |
-            ## 🚀 Meshiji v${{ github.ref_name }} Release
+            ## 🚀 Meshiji ${{ github.ref_name }} Release
 
             This release includes:
 

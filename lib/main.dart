@@ -1,21 +1,30 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'utils/app_theme.dart';
-import 'screens/file_explorer_screen.dart';
+import 'package:meshiji/app/meshiji_app.dart';
+import 'package:window_manager/window_manager.dart';
 
-void main() {
-  runApp(const FileExplorerApp());
-}
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-class FileExplorerApp extends StatelessWidget {
-  const FileExplorerApp({super.key});
+  // This setup is only for desktop platforms
+  if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+    await windowManager.ensureInitialized();
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Meshiji File Explorer',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.theme,
-      home: FileExplorerScreen(),
+    WindowOptions windowOptions = const WindowOptions(
+      size: Size(1200, 800),
+      center: true,
+      backgroundColor: Colors.transparent,
+      titleBarStyle: TitleBarStyle.hidden,
+      // Setting a minimum size is good practice for desktop apps
+      minimumSize: Size(600, 400),
     );
+
+    windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
   }
+
+  runApp(const MeshijiApp());
 }

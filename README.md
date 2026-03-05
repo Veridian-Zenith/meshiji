@@ -1,45 +1,69 @@
-# Meshiji
+# Meshiji (메시지)
 
-A modern, cross-platform file explorer built with Flutter, created by Veridian Zenith. Meshiji provides a clean and intuitive interface for managing your files and directories across multiple platforms.
+**Meshiji** (derived from the Korean word for "Message") is a high-performance, dark-first system file explorer designed explicitly for modern Linux desktop environments (like Hyprland) and Android. It bypasses conventional generic Material design in favor of a precision-crafted, token-driven aesthetic featuring frosted glass backdrops, fluid continuous particle animations, and true window-manager integration.
 
-## 🚀 Version 1.1.0 Release
+This is not a toy file manager. It is designed to feel like a serious system tool.
 
-**Release Date**: March 2026
-**Version**: 1.1.0+2
+## Key Features
 
-### 🎯 Major Improvements in v1.1.0
+* **Native Linux Desktop Compositing**: Fully transparent window backgrounds allowing the host compositor to draw borders, blur, and shadows behind a simulated frosted glass UI.
+* **Hardware Accelerated UI**: Built with Flutter and running at full refresh rate. Continuous non-blocking particle runes and layout animations.
+* **Isolate File Syncing**: Background processing for large directory reads and `statSync` calculations to ensure the UI thread never locks up, even in dense system folders.
+* **Design Token Architecture**: Strict dark-first semantic theming driven entirely by modular layer tokens (`DESIGN.md`).
+* **Intelligent Interactions**: Desktop-grade context menus, sidebar pinning, breadcrumb navigation, and instantaneous single-tap/click selection targeting.
 
-- **Complete Code Organization**: Extracted UI builders for better maintainability
-- **Comprehensive Keyboard Shortcuts**: Full keyboard-driven workflow support
-- **Linux Trash System Compliance**: XDG specification-compliant trash functionality
-- **Enhanced Error Handling**: Robust error management and user feedback
-- **Performance Optimizations**: Improved file operations and UI responsiveness
+## Installation & Setup
 
-## Features
+Meshiji requires `fvm` (Flutter Version Management) due to its use of specific engine rendering properties.
 
-- **Cross-Platform Support**: Works seamlessly on Windows, macOS, Linux, Android, and iOS
-- **Modern UI**: Clean, responsive design with dark theme support
-- **File Operations**: Complete file management including copy, move, delete, and rename
-- **Smart Trash System**: Linux XDG-compliant trash with restore capability
-- **Search Functionality**: Real-time file and directory search
-- **Keyboard Shortcuts**: Comprehensive keyboard-driven workflow
-- **Terminal Integration**: Built-in terminal for advanced users
-- **Settings**: Customizable preferences and appearance options
-- **Open Source**: Licensed under the Open Software License 3.0 (OSL-3.0)
+### Prerequisites
+
+* FVM (<https://fvm.app/>)
+* A Linux environment (tested heavily on Arch Linux + Hyprland)
+* For transparency to work natively, your compositor must support `rgba` window hints.
+
+### Build Instructions
+
+1. Clone the repository:
+
+    ```bash
+    git clone https://github.com/yourusername/meshiji.trim
+    cd meshiji
+    ```
+
+2. Install the required Flutter version:
+
+    ```bash
+    fvm install
+    ```
+
+3. Fetch dependencies:
+
+    ```bash
+    fvm flutter pub get
+    ```
+
+4. Run in debug mode (Linux):
+
+    ```bash
+    fvm flutter run -d linux
+    ```
+
+5. Build the release binary:
+
+    ```bash
+    fvm flutter build linux --release
+    ```
+
+## Architecture
+
+Meshiji is structurally strict. Please review the provided `DESIGN.md` before making UI changes.
+
+* `lib/app/`: Core app shell, `window_manager` listener implementation, and global transparent scaffolding.
+* `lib/theme/`: Home to `DesignTokens`, ensuring zero hardcoded arbitrary colors in the widget tree.
+* `lib/features/`: Segmented business logic (Explorer, Sidebar).
+* `lib/shared/`: Global reusable UI like `FrostedGlassCard` and `ParticleBackground`.
 
 ## License
 
-This project is licensed under the Open Software License (OSL) v3.0. See the [LICENSE](LICENSE) file for details.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+This software is released under the **Open Software License (OSL) v. 3.0**. See the `LICENSE` file for details. Copyright (c) 2026 Veridian Zenith.

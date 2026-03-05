@@ -1,86 +1,46 @@
-# Meshiji File Explorer - TODO List
+# Meshiji - Development TODO
 
-## High Priority
+## Completed 🟢
 
-### Performance & Stability
+- [x] Initial Project Setup (Flutter + FVM)
+- [x] Custom Theme & Token System (`DesignTokens`)
+- [x] Translucent Linux window background setup (`window_manager`)
+- [x] Continuous background animation (`ParticleBackground` with `flutter_animate`)
+- [x] UI Shell & Responsive Layout (Mobile vs Desktop)
+- [x] Frosted Glass components (`FrostedGlassCard`)
+- [x] Basic File System Reading & Display (Background Isolates)
+- [x] Breadcrumb navigation
+- [x] Hidden files toggle
+- [x] Custom Context Menu (Right-click/Long-press)
+- [x] File Deletion (Single & Multi-select)
+- [x] Pin/Unpin Directories to Sidebar
+- [x] Linux "Trash" support integrated into Sidebar
+- [x] Context Menu modularized and split (`FileContextMenu` / `DirectoryContextMenu`)
+- [x] Performance optimization (`listSync(followLinks: false)`, removed nested `AnimatedContainer`, conditional state rebuilds)
+- [x] Project documentation & README updated
 
-- [ ] **File Size Calculation Optimization**: Implement streaming calculation for large directories to prevent UI blocking
-- [ ] **Directory Pagination**: Add virtualization for directories with thousands of files
-- [ ] **Memory Management**: Implement proper cleanup for large file operations and terminal history
-- [ ] **Error Recovery**: Add retry mechanisms for failed file operations
+## Current Focus 🟡
 
-### Core Features
+- [ ] Implement basic File Explorer functions inside Context Menus:
+  - [ ] Copy Files/Directories
+  - [ ] Paste Files/Directories
+  - [ ] Cut (Move) Files/Directories
+  - [ ] Rename File/Directory
+  - [ ] Create New Folder
+  - [ ] Create New empty File
 
-- [ ] **File Preview System**: Add preview capabilities for images, text files, and PDFs
-- [ ] **Drag & Drop Support**: Implement drag-and-drop functionality for file operations
-- [ ] **Batch Operations**: Enhance copy/move operations with progress indicators
-- [ ] **File Compression**: Add zip/unzip functionality
+## Upcoming / Backlog 🔴
 
-## Medium Priority
+- [ ] **File Operations Feedback**: Add progress dialogs for long-running copy/move/delete operations.
+- [ ] **Search**: Implement recursive file search with highlighting.
+- [ ] **Sorting**: Allow sorting by Name, Date, Size, Type (Ascending/Descending).
+- [ ] **View Modes**: Grid View vs List View toggle.
+- [ ] **Keyboard Shortcuts**: (e.g., Delete key to delete, Ctrl+C/Ctrl+V, Arrow keys to navigate).
+- [ ] **Properties Dialog**: Show detailed file information (Permissions, exact size, etc.).
+- [ ] **Path Text Field**: Allow users to click the breadcrumbs and type an absolute path directly.
 
-### User Experience
+## Architecture & Refactoring Notes 🛠️
 
-- [ ] **Recent Files**: Add quick access to recently opened files and directories
-- [ ] **Bookmarks**: Implement directory bookmarking system
-- [ ] **File Search Enhancement**: Add content search within files
-- [ ] **File Type Detection**: Expand file type detection for more formats
-- [ ] **Keyboard Shortcuts**: Add comprehensive keyboard shortcut support
-
-### Terminal Enhancement
-
-- [ ] **Command History**: Implement persistent command history across sessions
-- [ ] **Command Completion**: Add tab completion for file paths and commands
-- [ ] **Terminal Themes**: Add multiple terminal color schemes
-- [ ] **Command Aliases**: Allow users to create custom command aliases
-
-## Low Priority
-
-### Polish & Features
-
-- [ ] **Internationalization**: Add support for multiple languages
-- [ ] **Accessibility**: Improve screen reader and keyboard navigation support
-- [ ] **File Properties**: Add detailed file property dialogs
-- [ ] **Network Drives**: Add support for network drive mounting
-- [ ] **Cloud Integration**: Basic integration with cloud storage services
-
-### Development & Testing
-
-- [ ] **Unit Tests**: Add comprehensive unit tests for all services
-- [ ] **Widget Tests**: Add widget tests for key UI components
-- [ ] **Integration Tests**: Add end-to-end testing for file operations
-- [ ] **Code Documentation**: Improve inline documentation and API docs
-
-## Technical Debt
-
-### Code Quality
-
-- [ ] **Refactor Complex Methods**: Break down large methods in FileExplorerScreen
-- [ ] **Command Pattern**: Implement command pattern for terminal operations
-- [ ] **State Management**: Consider implementing proper state management (Riverpod/BLoC)
-- [ ] **Dependency Injection**: Add proper dependency injection for better testability
-
-### Modernization
-
-- [ ] **Flutter SDK Update**: Keep Flutter SDK updated via FVM
-- [ ] **Dependency Updates**: Regularly update dependencies to latest stable versions
-- [ ] **Null Safety**: Ensure all code is properly null-safe (appears to be already done)
-- [ ] **Performance Profiling**: Regular performance profiling and optimization
-
-## Future Enhancements
-
-### Advanced Features
-
-- [ ] **File Synchronization**: Add sync capabilities between directories
-- [ ] **Version Control Integration**: Basic Git integration for file tracking
-- [ ] **File Encryption**: Add encryption/decryption capabilities
-- [ ] **Metadata Editing**: Allow editing of file metadata (EXIF, ID3 tags, etc.)
-
-### Platform-Specific
-
-- [ ] **Desktop Integration**: Platform-specific file operations and integrations
-- [ ] **Mobile Features**: Touch gestures and mobile-specific optimizations
-- [ ] **Web Support**: Consider web platform support if needed
-
----
-
-**Note**: This TODO list is prioritized based on impact vs effort. Start with high-priority items that provide the most value to users while maintaining code stability.
+- Ensure `explorer_page.dart` doesn't become a god object.
+- State management: Consider Riverpod or Provider if file state (copy/paste buffer) becomes complex across multiple split panes/tabs in the future.
+- Context menu must remain strictly bound by the `DesignTokens` and `FrostedGlassCard` aesthetic.

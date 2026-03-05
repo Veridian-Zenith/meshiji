@@ -7,7 +7,7 @@ project(runner LANGUAGES CXX)
 set(BINARY_NAME "meshiji")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
-set(APPLICATION_ID "com.vz.meshiji")
+set(APPLICATION_ID "com.example.meshiji")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.
@@ -86,7 +86,7 @@ endif()
 # Start with a clean build bundle directory every time.
 install(CODE "
   file(REMOVE_RECURSE \"${BUILD_BUNDLE_DIR}/\")
-  "  COMPONENT Runtime)
+  " COMPONENT Runtime)
 
 set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/data")
 set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
@@ -109,15 +109,15 @@ endforeach(bundled_library)
 # Copy the native assets provided by the build.dart from all packages.
 set(NATIVE_ASSETS_DIR "${PROJECT_BUILD_DIR}native_assets/linux/")
 install(DIRECTORY "${NATIVE_ASSETS_DIR}"
-  DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
-  COMPONENT Runtime)
+   DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+   COMPONENT Runtime)
 
 # Fully re-copy the assets directory on each build to avoid having stale files
 # from a previous install.
 set(FLUTTER_ASSET_DIR_NAME "flutter_assets")
 install(CODE "
   file(REMOVE_RECURSE \"${INSTALL_BUNDLE_DATA_DIR}/${FLUTTER_ASSET_DIR_NAME}\")
-  "  COMPONENT Runtime)
+  " COMPONENT Runtime)
 install(DIRECTORY "${PROJECT_BUILD_DIR}/${FLUTTER_ASSET_DIR_NAME}"
   DESTINATION "${INSTALL_BUNDLE_DATA_DIR}" COMPONENT Runtime)
 

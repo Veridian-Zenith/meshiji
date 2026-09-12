@@ -62,8 +62,11 @@ class _MeshijiAppState extends State<MeshijiApp> with WindowListener {
 
       // Method 3: Resize nudge (least disruptive)
       final size = await windowManager.getSize();
-      await windowManager.setSize(Size(size.width + 1, size.height));
-      await windowManager.setSize(size);
+      final screen = await windowManager.getBounds();
+      await windowManager.setSize(Size(
+        size.width.clamp(640.0, screen.width - 40),
+        size.height.clamp(480.0, screen.height - 40),
+      ));
 
       // Method 4: Set minimum size then restore (forces decoration renegotiation)
       // final minSize = await windowManager.getMinimumSize();

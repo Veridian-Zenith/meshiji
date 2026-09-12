@@ -45,4 +45,4 @@ app.*.map.json
 
 
 # AUR package build files
-AUR/
+pkg/

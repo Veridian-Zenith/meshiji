@@ -18,8 +18,8 @@ class AppBackground extends StatelessWidget {
                 end: Alignment.bottomRight,
                 colors: [
                   DesignTokens.colorRed,
-                  DesignTokens.colorAmber,
-                  DesignTokens.colorGold,
+                  DesignTokens.colorDarkRed,
+                  DesignTokens.colorBlack,
                 ],
               ),
             ),

@@ -37,6 +37,8 @@ class FileContextMenu extends StatelessWidget {
             children: [
               if (isDir)
                 ListTile(
+                  visualDensity: VisualDensity.comfortable,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   leading: Icon(
                     isPinned ? Iconsax.location_slash : Iconsax.location,
                     color: theme.textTheme.bodyMedium?.color,

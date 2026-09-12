@@ -59,11 +59,28 @@ class FileContextMenu extends StatelessWidget {
                 },
               ),
               const Divider(height: 1),
-              // --- TBD: File Explorer Operations ---
-              // ListTile(leading: const Icon(Iconsax.copy), title: const Text('Copy'), onTap: () {}),
-              // ListTile(leading: const Icon(Iconsax.scissor), title: const Text('Cut'), onTap: () {}),
-              // ListTile(leading: const Icon(Iconsax.edit), title: const Text('Rename'), onTap: () {}),
-              // const Divider(height: 1),
+              ListTile(
+                visualDensity: VisualDensity.comfortable,
+                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                leading: const Icon(Iconsax.copy),
+                title: const Text('Copy'),
+                onTap: () { onDismiss(); },
+              ),
+              ListTile(
+                visualDensity: VisualDensity.comfortable,
+                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                leading: const Icon(Iconsax.scissor),
+                title: const Text('Cut'),
+                onTap: () { onDismiss(); },
+              ),
+              ListTile(
+                visualDensity: VisualDensity.comfortable,
+                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                leading: const Icon(Iconsax.edit_2),
+                title: const Text('Rename'),
+                onTap: () { onDismiss(); },
+              ),
+              const Divider(height: 1),
               ListTile(
                 leading: const Icon(
                   Iconsax.trash,

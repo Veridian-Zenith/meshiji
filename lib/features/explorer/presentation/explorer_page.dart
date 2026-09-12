@@ -269,6 +269,7 @@ class _ExplorerPageState extends State<ExplorerPage> {
     } else if (Platform.isLinux) {
       final String? home = Platform.environment['HOME'];
       if (home != null) {
+        // XDG/freedesktop: config uses XDG_CONFIG_HOME (~/.config default)
         directory = Directory(home);
       }
     } else {

@@ -44,5 +44,6 @@ app.*.map.json
 /android/app/release
 
 
-# AUR package build files
+# AUR and other files
 pkg/
+skills/

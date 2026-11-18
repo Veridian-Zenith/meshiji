@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:meshiji/theme/tokens/design_tokens.dart';
@@ -25,11 +26,23 @@ class Sidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width,
-      child: ListView(
+      child: ListView(physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(DesignTokens.spacingBase),
         children: [
           _SidebarItem(icon: Iconsax.home_2, text: 'Home', onTap: onHome),
           _SidebarItem(icon: Iconsax.driver, text: 'Root', onTap: onRoot),
+          const Divider(height: 32),
+          // XDG standard pinned directories
+          ...['Documents','Downloads','Music','Pictures','Videos'].map((label) {
+            return _SidebarItem(
+              icon: Iconsax.document, text: label, onTap: () {
+                final home = Platform.environment['HOME'];
+                final envKey = 'XDG_${label.toUpperCase()}_DIR';
+                final xdgPath = Platform.environment[envKey] ?? (home != null ? '$home/$label' : '/');
+                onPinTapped(xdgPath);
+              },
+            );
+          }),
           const Divider(height: 32),
           if (pinnedPaths.isNotEmpty) ...[
             ...pinnedPaths.map(

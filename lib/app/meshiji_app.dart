@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:meshiji/features/explorer/presentation/explorer_page.dart';
 import 'package:meshiji/shared/widgets/app_background.dart';
 import 'package:meshiji/theme/app_theme.dart';
 import 'package:window_manager/window_manager.dart';
@@ -108,7 +107,7 @@ class _MeshijiAppState extends State<MeshijiApp> with WindowListener {
             const AppBackground(),
             const Padding(
               padding: EdgeInsets.all(16.0),
-              child: ExplorerPage(),
+              child: Sidebar(width: 250, onHome: () {}, onRoot: () {}, onTrash: () {}, pinnedPaths: [], onPinTapped: (p) {}),
             ),
           ],
         ),

@@ -10,6 +10,9 @@ class FileContextMenu extends StatelessWidget {
   final VoidCallback onOpen;
   final VoidCallback onTogglePin;
   final VoidCallback onDelete;
+  final VoidCallback onCopy;
+  final VoidCallback onCut;
+  final VoidCallback onRename;
   final VoidCallback onDismiss;
 
   const FileContextMenu({
@@ -19,6 +22,9 @@ class FileContextMenu extends StatelessWidget {
     required this.onOpen,
     required this.onTogglePin,
     required this.onDelete,
+    required this.onCopy,
+    required this.onCut,
+    required this.onRename,
     required this.onDismiss,
   });
 
@@ -64,21 +70,21 @@ class FileContextMenu extends StatelessWidget {
                 contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 leading: const Icon(Iconsax.copy),
                 title: const Text('Copy'),
-                onTap: () { onDismiss(); },
+                onTap: () { onDismiss(); onCut(); },
               ),
               ListTile(
                 visualDensity: VisualDensity.comfortable,
                 contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 leading: const Icon(Iconsax.scissor),
                 title: const Text('Cut'),
-                onTap: () { onDismiss(); },
+                onTap: () { onDismiss(); onCut(); },
               ),
               ListTile(
                 visualDensity: VisualDensity.comfortable,
                 contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 leading: const Icon(Iconsax.edit_2),
                 title: const Text('Rename'),
-                onTap: () { onDismiss(); },
+                onTap: () { onDismiss(); onCut(); },
               ),
               const Divider(height: 1),
               ListTile(
